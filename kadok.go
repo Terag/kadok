@@ -16,8 +16,9 @@ import (
 
 // Variables used globally
 var (
-	Token string
-	Kadok Character
+	Token    string
+	Kadok    Character
+	Perceval Character
 )
 
 var buffer = make([][]byte, 0)
@@ -38,6 +39,19 @@ func init() {
 		json.Unmarshal(byteValue, &Kadok)
 		fmt.Println("Kadok loaded succesfully!")
 	}
+
+	jsonFile.Close()
+	jsonFile, err = os.Open("characters/perceval.json")
+
+	if err != nil {
+		fmt.Println("Error getting Perceval's sentences")
+	} else {
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+		json.Unmarshal(byteValue, &Perceval)
+		fmt.Println("Perceval loaded succesfully!")
+	}
+
+	jsonFile.Close()
 
 	flag.StringVar(&Token, "t", "", "Bot Token")
 	flag.Parse()
@@ -103,6 +117,16 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, Kadok.Sentences[index])
 	}
 
+	if strings.Index(strings.ToUpper(m.Content), "PERCEVAL") > -1 {
+		if len(Perceval.Sentences) < 1 {
+			s.ChannelMessageSend(m.ChannelID, "Mordu, mordu mordu moooooooooooooooordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu morduuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!!!")
+			return
+		}
+
+		index := rand.Intn(len(Perceval.Sentences))
+
+		s.ChannelMessageSend(m.ChannelID, Perceval.Sentences[index])
+	}
 }
 
 func sayRandom(s *discordgo.Session) {
