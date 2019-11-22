@@ -4,24 +4,45 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/hajimehoshi/go-mp3"
+	"github.com/hajimehoshi/oto"
+	"gopkg.in/yaml.v2"
 )
+
+// Properties structure. Default from properties.yaml
+type Properties struct {
+	Characters struct {
+		Folder string `yaml:"folder"`
+		List   []struct {
+			Name string `yaml:"name"`
+			File string `yaml:"file"`
+			Data Character
+		}
+	}
+	Audio struct {
+		Folder string `yaml:"folder"`
+	}
+}
 
 // Variables used globally
 var (
-	Token    string
-	Kadok    Character
-	Perceval Character
+	Token         string
+	Configuration Properties
 )
 
-var buffer = make([][]byte, 0)
+var mutex = &sync.Mutex{}
 
 // Character of Kaamelott to retrieve sentences from
 type Character struct {
@@ -29,32 +50,47 @@ type Character struct {
 }
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 
-	jsonFile, err := os.Open("characters/kadok.json")
-
-	if err != nil {
-		fmt.Println("Error getting Kadok's sentences")
-	} else {
-		byteValue, _ := ioutil.ReadAll(jsonFile)
-		json.Unmarshal(byteValue, &Kadok)
-		fmt.Println("Kadok loaded succesfully!")
-	}
-
-	jsonFile.Close()
-	jsonFile, err = os.Open("characters/perceval.json")
-
-	if err != nil {
-		fmt.Println("Error getting Perceval's sentences")
-	} else {
-		byteValue, _ := ioutil.ReadAll(jsonFile)
-		json.Unmarshal(byteValue, &Perceval)
-		fmt.Println("Perceval loaded succesfully!")
-	}
-
-	jsonFile.Close()
-
+	var configPath string
 	flag.StringVar(&Token, "t", "", "Bot Token")
+	flag.StringVar(&configPath, "p", "properties.yaml", "Properties file")
 	flag.Parse()
+
+	loadConfiguration(configPath)
+}
+
+func loadConfiguration(path string) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Config file didn't load", r)
+		}
+	}()
+
+	configFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Printf("yamlFile.Get err   #%v ", err)
+	}
+
+	err = yaml.Unmarshal(configFile, &Configuration)
+	if err != nil {
+		panic(err)
+	}
+
+	for index := range Configuration.Characters.List {
+		jsonFile, err := os.Open(Configuration.Characters.Folder + "/" + Configuration.Characters.List[index].File)
+
+		if err != nil {
+			fmt.Println("Error getting " + Configuration.Characters.List[index].Name + "'s sentences")
+		} else {
+			byteValue, _ := ioutil.ReadAll(jsonFile)
+			json.Unmarshal(byteValue, &Configuration.Characters.List[index].Data)
+			fmt.Println(Configuration.Characters.List[index].Name + " loaded succesfully!")
+		}
+
+		jsonFile.Close()
+	}
 }
 
 func main() {
@@ -76,8 +112,7 @@ func main() {
 		return
 	}
 
-	// Wait here until CTRL-C or other term signal is received.
-	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
+	// fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
@@ -91,7 +126,6 @@ func main() {
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Ignore all messages created by the bot itself
-	// This isn't required in this specific example but it's a good practice.
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
@@ -106,29 +140,153 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "À Kadoc ! À Kadoc ! Ping!")
 	}
 
-	if strings.Index(strings.ToUpper(m.Content), "KADOK") > -1 {
-		if len(Kadok.Sentences) < 1 {
-			s.ChannelMessageSend(m.ChannelID, "Mordu, mordu mordu moooooooooooooooordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu morduuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!!!")
-			return
+	if strings.ToUpper(m.Content) == "KADOK HELP" {
+		message := ""
+		message += "\nTatan elle fait du flan, elle m'a aussi dit de dire des choses intelligentes si on m'appel: 'AKadok'"
+		message += "\nLe caca des pigeons, c'est caca. J'ai pleins d'amis à Kaamelott:"
+		for _, character := range Configuration.Characters.List {
+			message += "\n- " + character.Name
 		}
-
-		index := rand.Intn(len(Kadok.Sentences))
-
-		s.ChannelMessageSend(m.ChannelID, Kadok.Sentences[index])
+		s.ChannelMessageSend(m.ChannelID, message)
+		return
 	}
 
-	if strings.Index(strings.ToUpper(m.Content), "PERCEVAL") > -1 {
-		if len(Perceval.Sentences) < 1 {
-			s.ChannelMessageSend(m.ChannelID, "Mordu, mordu mordu moooooooooooooooordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu morduuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!!!")
+	if strings.ToUpper(m.Content) == "AKADOK" {
+		mutex.Lock()
+		defer mutex.Unlock()
+		audioFiles, err := ioutil.ReadDir(Configuration.Audio.Folder)
+		index := rand.Intn(len(audioFiles))
+		chanBuf := make(chan []byte)
+		go loadSound(chanBuf, Configuration.Audio.Folder+"/"+audioFiles[index].Name())
+
+		// Find the channel that the message came from.
+		c, err := s.State.Channel(m.ChannelID)
+		if err != nil {
+			// Could not find channel.
 			return
 		}
 
-		index := rand.Intn(len(Perceval.Sentences))
+		// Find the guild for that channel.
+		g, err := s.State.Guild(c.GuildID)
+		if err != nil {
+			// Could not find guild.
+			return
+		}
 
-		s.ChannelMessageSend(m.ChannelID, Perceval.Sentences[index])
+		// Look for the message sender in that guild's current voice states.
+		for _, vs := range g.VoiceStates {
+			if vs.UserID == m.Author.ID {
+				err = playSound(chanBuf, s, g.ID, vs.ChannelID)
+				if err != nil {
+					fmt.Println("Error playing sound:", err)
+				}
+
+				return
+			}
+		}
+		return
+	}
+
+	for _, character := range Configuration.Characters.List {
+		if strings.Index(strings.ToUpper(m.Content), strings.ToUpper(character.Name)) > -1 {
+			if len(character.Data.Sentences) < 1 {
+				s.ChannelMessageSend(m.ChannelID, "Mordu, mordu mordu moooooooooooooooordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu morduuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!!!")
+				return
+			}
+
+			index := rand.Intn(len(character.Data.Sentences))
+
+			s.ChannelMessageSend(m.ChannelID, character.Data.Sentences[index])
+			return
+		}
 	}
 }
 
-func sayRandom(s *discordgo.Session) {
+// loadSound attempts to load an encoded sound file from disk.
+func loadSound(outBuf chan []byte, path string) {
 
+	file, err := os.Open(path)
+	if err != nil {
+		close(outBuf)
+		return
+	}
+	defer file.Close()
+
+	decoder, err := mp3.NewDecoder(file)
+	if err != nil {
+		close(outBuf)
+		return
+	}
+
+	context, err := oto.NewContext(decoder.SampleRate(), 2, 2, 8192)
+	if err != nil {
+		close(outBuf)
+		return
+	}
+	defer context.Close()
+
+	player := context.NewPlayer()
+	defer player.Close()
+
+	var inBuf = make([]byte, 1024)
+
+	for {
+		// Read opus frame length from mp3 file.
+		_, err := decoder.Read(inBuf)
+
+		// If this is the end of the file, just return.
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
+			close(outBuf)
+			return
+		}
+
+		if err != nil {
+			fmt.Println("Error reading file :", err)
+			close(outBuf)
+			return
+		}
+
+		_, err = io.Copy(player, decoder)
+		if err != nil {
+			close(outBuf)
+			return
+		}
+
+		player.Write(inBuf)
+
+		// Append decoded mp3 data to the buffer channel.
+		outBuf <- inBuf
+	}
+}
+
+// playSound plays the current buffer to the provided channel.
+func playSound(chanBuf chan []byte, s *discordgo.Session, guildID, channelID string) (err error) {
+
+	//Join the provided voice channel.
+	vc, err := s.ChannelVoiceJoin(guildID, channelID, false, true)
+	if err != nil {
+		return err
+	}
+
+	// Sleep for a specified amount of time before playing the sound
+	time.Sleep(250 * time.Millisecond)
+
+	// Start speaking.
+	vc.Speaking(true)
+
+	// Send the buffer data.
+	for buff := range chanBuf {
+		vc.OpusSend <- buff
+	}
+
+	// Stop speaking
+	vc.Speaking(false)
+
+	// Sleep for a specificed amount of time before ending.
+	time.Sleep(250 * time.Millisecond)
+
+	// Disconnect from the provided voice channel.
+	vc.Disconnect()
+
+	return nil
 }
