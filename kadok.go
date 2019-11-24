@@ -17,7 +17,6 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/hajimehoshi/go-mp3"
-	"github.com/hajimehoshi/oto"
 	"gopkg.in/yaml.v2"
 )
 
@@ -40,6 +39,7 @@ type Properties struct {
 var (
 	Token         string
 	Configuration Properties
+	Buffer        [][]byte
 )
 
 var mutex = &sync.Mutex{}
@@ -156,8 +156,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		defer mutex.Unlock()
 		audioFiles, err := ioutil.ReadDir(Configuration.Audio.Folder)
 		index := rand.Intn(len(audioFiles))
-		chanBuf := make(chan []byte)
-		go loadSound(chanBuf, Configuration.Audio.Folder+"/"+audioFiles[index].Name())
+		Buffer := make([][]byte, 0)
+		go loadSound(Configuration.Audio.Folder + "/" + audioFiles[index].Name())
 
 		// Find the channel that the message came from.
 		c, err := s.State.Channel(m.ChannelID)
@@ -176,7 +176,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		// Look for the message sender in that guild's current voice states.
 		for _, vs := range g.VoiceStates {
 			if vs.UserID == m.Author.ID {
-				err = playSound(chanBuf, s, g.ID, vs.ChannelID)
+				err = playSound(s, g.ID, vs.ChannelID)
 				if err != nil {
 					fmt.Println("Error playing sound:", err)
 				}
@@ -203,30 +203,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 // loadSound attempts to load an encoded sound file from disk.
-func loadSound(outBuf chan []byte, path string) {
+func loadSound(path string) {
 
 	file, err := os.Open(path)
 	if err != nil {
-		close(outBuf)
 		return
 	}
 	defer file.Close()
 
 	decoder, err := mp3.NewDecoder(file)
 	if err != nil {
-		close(outBuf)
 		return
 	}
-
-	context, err := oto.NewContext(decoder.SampleRate(), 2, 2, 8192)
-	if err != nil {
-		close(outBuf)
-		return
-	}
-	defer context.Close()
-
-	player := context.NewPlayer()
-	defer player.Close()
 
 	var inBuf = make([]byte, 1024)
 
@@ -236,31 +224,21 @@ func loadSound(outBuf chan []byte, path string) {
 
 		// If this is the end of the file, just return.
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
-			close(outBuf)
 			return
 		}
 
 		if err != nil {
 			fmt.Println("Error reading file :", err)
-			close(outBuf)
 			return
 		}
-
-		_, err = io.Copy(player, decoder)
-		if err != nil {
-			close(outBuf)
-			return
-		}
-
-		player.Write(inBuf)
 
 		// Append decoded mp3 data to the buffer channel.
-		outBuf <- inBuf
+		Buffer = append(Buffer, inBuf)
 	}
 }
 
 // playSound plays the current buffer to the provided channel.
-func playSound(chanBuf chan []byte, s *discordgo.Session, guildID, channelID string) (err error) {
+func playSound(s *discordgo.Session, guildID, channelID string) (err error) {
 
 	//Join the provided voice channel.
 	vc, err := s.ChannelVoiceJoin(guildID, channelID, false, true)
@@ -275,8 +253,8 @@ func playSound(chanBuf chan []byte, s *discordgo.Session, guildID, channelID str
 	vc.Speaking(true)
 
 	// Send the buffer data.
-	for buff := range chanBuf {
-		vc.OpusSend <- buff
+	for row := range buffer {
+		vc.OpusSend <- row
 	}
 
 	// Stop speaking
