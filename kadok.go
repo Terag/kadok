@@ -249,7 +249,7 @@ func loadSound(path string) {
 		}
 
 		r16 := bytes.NewReader(inBuff)
-		err := binary.Read(r16, binary.LittleEndian, in16Buff)
+		err = binary.Read(r16, binary.LittleEndian, in16Buff)
 		if err != nil {
 			fmt.Println("binary.Read failed:", err)
 		}
