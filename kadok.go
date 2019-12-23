@@ -162,7 +162,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		defer mutex.Unlock()
 		audioFiles, err := ioutil.ReadDir(Configuration.Audio.Folder)
 		index := rand.Intn(len(audioFiles))
-		Buffer := make([][]byte, 0)
+		Buffer = make([][]byte, 0)
 		go loadSound(Configuration.Audio.Folder + "/" + audioFiles[index].Name())
 
 		// Find the channel that the message came from.
