@@ -17,6 +17,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/hajimehoshi/go-mp3"
+	"gopkg.in/hraban/opus.v2"
 	"gopkg.in/yaml.v2"
 )
 
@@ -41,6 +42,9 @@ var (
 	Configuration Properties
 	Buffer        [][]byte
 )
+
+const sampleRate = 48000
+const channels = 2 // 1 mono; 2 stereo
 
 var mutex = &sync.Mutex{}
 
@@ -216,11 +220,19 @@ func loadSound(path string) {
 		return
 	}
 
-	var inBuf = make([]byte, 1024)
+	opusEnc, err := opus.NewEncoder(sampleRate, channels, opus.AppVoIP)
+	if err != nil {
+		fmt.Println("Error creating opus encoder :", err)
+		return
+	}
+
+	var writer io.WriteCloser
+
+	var inBuff = make([]byte, 1024)
 
 	for {
 		// Read opus frame length from mp3 file.
-		_, err := decoder.Read(inBuf)
+		_, err := decoder.Read(inBuff)
 
 		// If this is the end of the file, just return.
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
@@ -232,8 +244,15 @@ func loadSound(path string) {
 			return
 		}
 
+		n, err := enc.Encode(pcm, inBuff)
+		if err != nil {
+			fmt.Println("Error encoding Opus : ", err)
+			return
+		}
+		inBuff = inBuff[:n]
+
 		// Append decoded mp3 data to the buffer channel.
-		Buffer = append(Buffer, inBuf)
+		Buffer = append(Buffer, inBuff)
 	}
 }
 
@@ -253,7 +272,7 @@ func playSound(s *discordgo.Session, guildID, channelID string) (err error) {
 	vc.Speaking(true)
 
 	// Send the buffer data.
-	for row := range buffer {
+	for row := range Buffer {
 		vc.OpusSend <- row
 	}
 
