@@ -231,7 +231,7 @@ func loadSound(path string) {
 	var writer io.WriteCloser
 
 	var inBuff = make([]byte, 1024)
-	var in16Buff = make([]byte, 512)
+	var in16Buff = make([]int16, 512)
 	var outBuff = make([]byte, 1024)
 
 	for {
@@ -248,7 +248,7 @@ func loadSound(path string) {
 			return
 		}
 
-		r16 = bytes.NewReader(inBuff)
+		r16 := bytes.NewReader(inBuff)
 		err := binary.Read(r16, binary.LittleEndian, in16Buff)
 		if err != nil {
 			fmt.Println("binary.Read failed:", err)
