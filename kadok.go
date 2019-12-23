@@ -228,8 +228,6 @@ func loadSound(path string) {
 		return
 	}
 
-	var writer io.WriteCloser
-
 	var inBuff = make([]byte, 1024)
 	var in16Buff = make([]int16, 512)
 	var outBuff = make([]byte, 1024)
