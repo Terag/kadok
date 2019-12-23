@@ -229,6 +229,7 @@ func loadSound(path string) {
 	var writer io.WriteCloser
 
 	var inBuff = make([]byte, 1024)
+	var outBuff = make([]byte, 1024)
 
 	for {
 		// Read opus frame length from mp3 file.
@@ -244,15 +245,15 @@ func loadSound(path string) {
 			return
 		}
 
-		n, err := enc.Encode(pcm, inBuff)
+		n, err := opusEnc.Encode(inBuff, outBuff)
 		if err != nil {
 			fmt.Println("Error encoding Opus : ", err)
 			return
 		}
-		inBuff = inBuff[:n]
+		outBuff = outBuff[:n]
 
 		// Append decoded mp3 data to the buffer channel.
-		Buffer = append(Buffer, inBuff)
+		Buffer = append(Buffer, outBuff)
 	}
 }
 
@@ -272,7 +273,7 @@ func playSound(s *discordgo.Session, guildID, channelID string) (err error) {
 	vc.Speaking(true)
 
 	// Send the buffer data.
-	for row := range Buffer {
+	for _, row := range Buffer {
 		vc.OpusSend <- row
 	}
 
