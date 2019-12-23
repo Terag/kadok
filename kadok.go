@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"flag"
@@ -230,6 +231,7 @@ func loadSound(path string) {
 	var writer io.WriteCloser
 
 	var inBuff = make([]byte, 1024)
+	var in16Buff = make([]byte, 512)
 	var outBuff = make([]byte, 1024)
 
 	for {
@@ -246,7 +248,12 @@ func loadSound(path string) {
 			return
 		}
 
-		in16Buff := int16(binary.LittleEndian.Uint16(inBuff))
+		r16 = bytes.NewReader(inBuff)
+		err := binary.Read(r16, binary.LittleEndian, in16Buff)
+		if err != nil {
+			fmt.Println("binary.Read failed:", err)
+		}
+
 		n, err := opusEnc.Encode(in16Buff, outBuff)
 		if err != nil {
 			fmt.Println("Error encoding Opus : ", err)
