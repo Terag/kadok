@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -17,6 +19,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/hajimehoshi/go-mp3"
+	"gopkg.in/hraban/opus.v2"
 	"gopkg.in/yaml.v2"
 )
 
@@ -41,6 +44,9 @@ var (
 	Configuration Properties
 	Buffer        [][]byte
 )
+
+const sampleRate = 48000
+const channels = 2 // 1 mono; 2 stereo
 
 var mutex = &sync.Mutex{}
 
@@ -156,7 +162,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		defer mutex.Unlock()
 		audioFiles, err := ioutil.ReadDir(Configuration.Audio.Folder)
 		index := rand.Intn(len(audioFiles))
-		Buffer := make([][]byte, 0)
+		Buffer = make([][]byte, 0)
+		fmt.Println("Play : ", audioFiles[index].Name())
 		go loadSound(Configuration.Audio.Folder + "/" + audioFiles[index].Name())
 
 		// Find the channel that the message came from.
@@ -215,12 +222,21 @@ func loadSound(path string) {
 	if err != nil {
 		return
 	}
+	fmt.Println("File sampleRate is : ", decoder.SampleRate())
 
-	var inBuf = make([]byte, 1024)
+	opusEnc, err := opus.NewEncoder(sampleRate, channels, opus.AppVoIP)
+	if err != nil {
+		fmt.Println("Error creating opus encoder :", err)
+		return
+	}
+
+	var inBuff = make([]byte, decoder.SampleRate())
+	var in16Buff = make([]int16, decoder.SampleRate())
+	var outBuff = make([]byte, decoder.SampleRate())
 
 	for {
 		// Read opus frame length from mp3 file.
-		_, err := decoder.Read(inBuf)
+		_, err := decoder.Read(inBuff)
 
 		// If this is the end of the file, just return.
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
@@ -232,8 +248,32 @@ func loadSound(path string) {
 			return
 		}
 
+		r16 := bytes.NewReader(inBuff)
+		err = binary.Read(r16, binary.LittleEndian, in16Buff)
+		if err != nil {
+			fmt.Println("binary.Read failed:", err)
+		}
+
+		// Check the frame size. You don't need to do this if you trust your input.
+		frameSize := len(in16Buff) // must be interleaved if stereo
+		frameSizeMs := float32(frameSize) / channels * 1000 / sampleRate
+		switch frameSizeMs {
+		case 2.5, 5, 10, 20, 40, 60:
+			// Good.
+		default:
+			fmt.Println("Illegal frame size: ", frameSize, " bytes (", frameSizeMs, " ms)")
+			return
+		}
+
+		n, err := opusEnc.Encode(in16Buff, outBuff)
+		if err != nil {
+			fmt.Println("Error encoding Opus : ", err)
+			return
+		}
+		outBuff = outBuff[:n]
+
 		// Append decoded mp3 data to the buffer channel.
-		Buffer = append(Buffer, inBuf)
+		Buffer = append(Buffer, outBuff)
 	}
 }
 
@@ -253,7 +293,7 @@ func playSound(s *discordgo.Session, guildID, channelID string) (err error) {
 	vc.Speaking(true)
 
 	// Send the buffer data.
-	for row := range buffer {
+	for _, row := range Buffer {
 		vc.OpusSend <- row
 	}
 
