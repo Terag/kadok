@@ -261,7 +261,7 @@ func loadSound(path string) {
 		case 2.5, 5, 10, 20, 40, 60:
 			// Good.
 		default:
-			fmt.Errorf("Illegal frame size: %d bytes (%f ms)", frameSize, frameSizeMs)
+			fmt.Print("Illegal frame size: %d bytes (%f ms)\n", frameSize, frameSizeMs)
 			return
 		}
 
