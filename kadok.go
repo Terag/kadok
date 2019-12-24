@@ -101,8 +101,6 @@ func loadConfiguration(path string) {
 
 func main() {
 
-	fmt.Println("Le caca des pigeons c'est caca, faut pas manger.")
-
 	// Create a new Discord session using the provided bot token.
 	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
@@ -224,6 +222,7 @@ func loadSound(path string) {
 	if err != nil {
 		return
 	}
+	fmt.Println("File sampleRate is : ", decoder.SampleRate())
 
 	opusEnc, err := opus.NewEncoder(sampleRate, channels, opus.AppVoIP)
 	if err != nil {
@@ -231,9 +230,9 @@ func loadSound(path string) {
 		return
 	}
 
-	var inBuff = make([]byte, 96)
-	var in16Buff = make([]int16, 48)
-	var outBuff = make([]byte, 96)
+	var inBuff = make([]byte, decoder.SampleRate())
+	var in16Buff = make([]int16, decoder.SampleRate())
+	var outBuff = make([]byte, decoder.SampleRate())
 
 	for {
 		// Read opus frame length from mp3 file.
