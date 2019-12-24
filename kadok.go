@@ -165,6 +165,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		audioFiles, err := ioutil.ReadDir(Configuration.Audio.Folder)
 		index := rand.Intn(len(audioFiles))
 		Buffer = make([][]byte, 0)
+		fmt.Println("Play : ", audioFiles[index].Name())
 		go loadSound(Configuration.Audio.Folder + "/" + audioFiles[index].Name())
 
 		// Find the channel that the message came from.
@@ -230,9 +231,9 @@ func loadSound(path string) {
 		return
 	}
 
-	var inBuff = make([]byte, 1024)
-	var in16Buff = make([]int16, 512)
-	var outBuff = make([]byte, 1024)
+	var inBuff = make([]byte, 96)
+	var in16Buff = make([]int16, 48)
+	var outBuff = make([]byte, 96)
 
 	for {
 		// Read opus frame length from mp3 file.
@@ -261,7 +262,7 @@ func loadSound(path string) {
 		case 2.5, 5, 10, 20, 40, 60:
 			// Good.
 		default:
-			fmt.Print("Illegal frame size: %d bytes (%f ms)\n", frameSize, frameSizeMs)
+			fmt.Println("Illegal frame size: ", frameSize, " bytes (", frameSizeMs, " ms)")
 			return
 		}
 
