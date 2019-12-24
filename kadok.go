@@ -101,6 +101,8 @@ func loadConfiguration(path string) {
 
 func main() {
 
+	fmt.Println("Le caca des pigeons c'est caca, faut pas manger.")
+
 	// Create a new Discord session using the provided bot token.
 	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
@@ -250,6 +252,17 @@ func loadSound(path string) {
 		err = binary.Read(r16, binary.LittleEndian, in16Buff)
 		if err != nil {
 			fmt.Println("binary.Read failed:", err)
+		}
+
+		// Check the frame size. You don't need to do this if you trust your input.
+		frameSize := len(in16Buff) // must be interleaved if stereo
+		frameSizeMs := float32(frameSize) / channels * 1000 / sampleRate
+		switch frameSizeMs {
+		case 2.5, 5, 10, 20, 40, 60:
+			// Good.
+		default:
+			fmt.Errorf("Illegal frame size: %d bytes (%f ms)", frameSize, frameSizeMs)
+			return
 		}
 
 		n, err := opusEnc.Encode(in16Buff, outBuff)
