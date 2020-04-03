@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -18,8 +15,6 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/hajimehoshi/go-mp3"
-	"gopkg.in/hraban/opus.v2"
 	"gopkg.in/yaml.v2"
 )
 
@@ -158,39 +153,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if strings.ToUpper(m.Content) == "AKADOK" {
-		mutex.Lock()
-		defer mutex.Unlock()
-		audioFiles, err := ioutil.ReadDir(Configuration.Audio.Folder)
-		index := rand.Intn(len(audioFiles))
-		Buffer = make([][]byte, 0)
-		fmt.Println("Play : ", audioFiles[index].Name())
-		go loadSound(Configuration.Audio.Folder + "/" + audioFiles[index].Name())
-
-		// Find the channel that the message came from.
-		c, err := s.State.Channel(m.ChannelID)
-		if err != nil {
-			// Could not find channel.
-			return
-		}
-
-		// Find the guild for that channel.
-		g, err := s.State.Guild(c.GuildID)
-		if err != nil {
-			// Could not find guild.
-			return
-		}
-
-		// Look for the message sender in that guild's current voice states.
-		for _, vs := range g.VoiceStates {
-			if vs.UserID == m.Author.ID {
-				err = playSound(s, g.ID, vs.ChannelID)
-				if err != nil {
-					fmt.Println("Error playing sound:", err)
-				}
-
-				return
-			}
-		}
+		s.ChannelMessageSend(m.ChannelID, "Mordu, mordu mordu moooooooooooooooordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu morduuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!!!")
 		return
 	}
 
@@ -207,104 +170,4 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 	}
-}
-
-// loadSound attempts to load an encoded sound file from disk.
-func loadSound(path string) {
-
-	file, err := os.Open(path)
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
-	decoder, err := mp3.NewDecoder(file)
-	if err != nil {
-		return
-	}
-	fmt.Println("File sampleRate is : ", decoder.SampleRate())
-
-	opusEnc, err := opus.NewEncoder(sampleRate, channels, opus.AppVoIP)
-	if err != nil {
-		fmt.Println("Error creating opus encoder :", err)
-		return
-	}
-
-	var inBuff = make([]byte, decoder.SampleRate())
-	var in16Buff = make([]int16, decoder.SampleRate())
-	var outBuff = make([]byte, decoder.SampleRate())
-
-	for {
-		// Read opus frame length from mp3 file.
-		_, err := decoder.Read(inBuff)
-
-		// If this is the end of the file, just return.
-		if err == io.EOF || err == io.ErrUnexpectedEOF {
-			return
-		}
-
-		if err != nil {
-			fmt.Println("Error reading file :", err)
-			return
-		}
-
-		r16 := bytes.NewReader(inBuff)
-		err = binary.Read(r16, binary.LittleEndian, in16Buff)
-		if err != nil {
-			fmt.Println("binary.Read failed:", err)
-		}
-
-		// Check the frame size. You don't need to do this if you trust your input.
-		frameSize := len(in16Buff) // must be interleaved if stereo
-		frameSizeMs := float32(frameSize) / channels * 1000 / sampleRate
-		switch frameSizeMs {
-		case 2.5, 5, 10, 20, 40, 60:
-			// Good.
-		default:
-			fmt.Println("Illegal frame size: ", frameSize, " bytes (", frameSizeMs, " ms)")
-			return
-		}
-
-		n, err := opusEnc.Encode(in16Buff, outBuff)
-		if err != nil {
-			fmt.Println("Error encoding Opus : ", err)
-			return
-		}
-		outBuff = outBuff[:n]
-
-		// Append decoded mp3 data to the buffer channel.
-		Buffer = append(Buffer, outBuff)
-	}
-}
-
-// playSound plays the current buffer to the provided channel.
-func playSound(s *discordgo.Session, guildID, channelID string) (err error) {
-
-	//Join the provided voice channel.
-	vc, err := s.ChannelVoiceJoin(guildID, channelID, false, true)
-	if err != nil {
-		return err
-	}
-
-	// Sleep for a specified amount of time before playing the sound
-	time.Sleep(250 * time.Millisecond)
-
-	// Start speaking.
-	vc.Speaking(true)
-
-	// Send the buffer data.
-	for _, row := range Buffer {
-		vc.OpusSend <- row
-	}
-
-	// Stop speaking
-	vc.Speaking(false)
-
-	// Sleep for a specificed amount of time before ending.
-	time.Sleep(250 * time.Millisecond)
-
-	// Disconnect from the provided voice channel.
-	vc.Disconnect()
-
-	return nil
 }
