@@ -19,5 +19,3 @@ characters:
     -
       name: Yvain
       file: yvain.json
-audio:
-  folder: sounds
