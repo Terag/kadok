@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -22,11 +21,7 @@ import (
 type Properties struct {
 	Characters struct {
 		Folder string `yaml:"folder"`
-		List   []struct {
-			Name string `yaml:"name"`
-			File string `yaml:"file"`
-			Data Character
-		}
+		List   []Character
 	}
 	Audio struct {
 		Folder string `yaml:"folder"`
@@ -44,11 +39,6 @@ const sampleRate = 48000
 const channels = 2 // 1 mono; 2 stereo
 
 var mutex = &sync.Mutex{}
-
-// Character of Kaamelott to retrieve sentences from
-type Character struct {
-	Sentences []string `json:"sentences"`
-}
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -79,19 +69,7 @@ func loadConfiguration(path string) {
 		panic(err)
 	}
 
-	for index := range Configuration.Characters.List {
-		jsonFile, err := os.Open(Configuration.Characters.Folder + "/" + Configuration.Characters.List[index].File)
-
-		if err != nil {
-			fmt.Println("Error getting " + Configuration.Characters.List[index].Name + "'s sentences")
-		} else {
-			byteValue, _ := ioutil.ReadAll(jsonFile)
-			json.Unmarshal(byteValue, &Configuration.Characters.List[index].Data)
-			fmt.Println(Configuration.Characters.List[index].Name + " loaded succesfully!")
-		}
-
-		jsonFile.Close()
-	}
+	loadCharacters()
 }
 
 func main() {
@@ -144,11 +122,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.ToUpper(m.Content) == "KADOK HELP" {
 		message := ""
 		message += "\nTatan elle fait du flan, elle m'a aussi dit de dire des choses intelligentes si on m'appel: 'AKadok'"
-		message += "\nLe caca des pigeons, c'est caca. J'ai pleins d'amis à Kaamelott:"
-		for _, character := range Configuration.Characters.List {
-			message += "\n- " + character.Name
-		}
+		message += "\n'Kadok aqui' ? Je dis tous mes amis !"
 		s.ChannelMessageSend(m.ChannelID, message)
+		return
+	}
+
+	if strings.ToUpper(m.Content) == "KADOK AQUI" {
+		displayAvailableCharacters(s, m)
 		return
 	}
 
@@ -157,17 +137,5 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	for _, character := range Configuration.Characters.List {
-		if strings.Index(strings.ToUpper(m.Content), strings.ToUpper(character.Name)) > -1 {
-			if len(character.Data.Sentences) < 1 {
-				s.ChannelMessageSend(m.ChannelID, "Mordu, mordu mordu moooooooooooooooordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu morduuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!!!")
-				return
-			}
-
-			index := rand.Intn(len(character.Data.Sentences))
-
-			s.ChannelMessageSend(m.ChannelID, character.Data.Sentences[index])
-			return
-		}
-	}
+	handleCalledCharacter(s, m)
 }
