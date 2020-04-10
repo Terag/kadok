@@ -1,21 +1,2 @@
 characters:
   folder: characters
-  list:
-    -
-      name: Kadok
-      file: kadok.json
-    -
-      name: Perceval
-      file: perceval.json
-    -
-      name: Karadok
-      file: karadok.json
-    -
-      name: Arthur
-      file: arthur.json
-    -
-      name: Leodagan
-      file: leodagan.json
-    -
-      name: Yvain
-      file: yvain.json
