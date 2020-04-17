@@ -1,2 +1,4 @@
+security:
+  roles: security/roles.json
 characters:
   folder: characters
