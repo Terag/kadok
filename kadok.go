@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
 	"gopkg.in/yaml.v2"
 )
@@ -26,6 +27,9 @@ type Properties struct {
 	Audio struct {
 		Folder string `yaml:"folder"`
 	}
+	Security struct {
+		RolesConfiguration string `yaml:"roles"`
+	}
 }
 
 // Variables used globally
@@ -33,6 +37,7 @@ var (
 	Token         string
 	Configuration Properties
 	Buffer        [][]byte
+	RolesTree     security.RolesTree
 )
 
 const sampleRate = 48000
@@ -66,6 +71,13 @@ func loadConfiguration(path string) {
 
 	err = yaml.Unmarshal(configFile, &Configuration)
 	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
+	RolesTree, err = security.MakeRolesTreeFromFile(Configuration.Security.RolesConfiguration)
+	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 
@@ -109,6 +121,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	roles, err := GetUserRoles(s, m)
+	if err != nil {
+		fmt.Println("Error retrieving user roles")
+		return
+	}
+	isGranted := security.MakeIsGranted(RolesTree, roles)
+
 	// If the message is "ping" reply with "Pong!"
 	if strings.ToUpper(m.Content) == "PING" {
 		s.ChannelMessageSend(m.ChannelID, "À Kadoc ! À Kadoc ! Pong!")
@@ -120,15 +139,19 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if strings.ToUpper(m.Content) == "KADOK HELP" {
-		message := ""
-		message += "\nTatan elle fait du flan, elle m'a aussi dit de dire des choses intelligentes si on m'appel: 'AKadok'"
-		message += "\n'Kadok aqui' ? Je dis tous mes amis !"
-		s.ChannelMessageSend(m.ChannelID, message)
+		if isGranted(security.GetHelp) {
+			message := ""
+			message += "\nTatan elle fait du flan, elle m'a aussi dit de dire des choses intelligentes si on m'appel: 'AKadok'"
+			message += "\n'Kadok aqui' ? Je dis tous mes amis !"
+			s.ChannelMessageSend(m.ChannelID, message)
+		}
 		return
 	}
 
 	if strings.ToUpper(m.Content) == "KADOK AQUI" {
-		displayAvailableCharacters(s, m)
+		if isGranted(security.GetCharacterList) {
+			displayAvailableCharacters(s, m)
+		}
 		return
 	}
 
@@ -137,5 +160,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	handleCalledCharacter(s, m)
+	if isGranted(security.CallCharacter) {
+		handleCalledCharacter(s, m)
+	}
 }
