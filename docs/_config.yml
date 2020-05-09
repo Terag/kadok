@@ -1,0 +1,9 @@
+title: Kadok
+remote_theme: pmarsceill/just-the-docs
+description: "Where's Kadoc? Is he well hidden?"
+footer_content: "Kadok is maintained by the team of \"Les Petits Pédestres\" under the <a href=\"https://github.com/Terag/kadok/blob/master/LICENSE\">GNU GENERAL PUBLIC LICENSE Version 3.</a>"
+color_scheme: nil
+search_enabled: false
+aux_links:
+  "Kadok on GitHub":
+    - "//github.com/Terag/kadok"

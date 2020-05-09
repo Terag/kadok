@@ -4,7 +4,6 @@
 
 # Who is Kadok ?
 
-
 Kadok is a bot developed for the Discord Guild "Les petits pedestres".
 It aims to provide fun and useful functionnalities for the Guild Members.
 
@@ -22,18 +21,6 @@ The current available features are:
 - Play ping pong
 - Quote characters from Kaamelott universe (and even more!)
 - Manage features' permission based on Discord roles
-
-# Documentation
-
-## Users
-
-In the configuration, the prefix to call the bot can be changed. The default value being "kadok".
-
-## Developers
-
-For the developers documentation, please check: https://godoc.org/github.com/Terag/kadok
-
-Or run godoc locally to generate the documentation.
 
 # Installation
 
@@ -191,6 +178,7 @@ Available options:
 ### Using Docker
 
 > Soon to come !
+
 
 # Information
 
