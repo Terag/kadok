@@ -1,4 +1,5 @@
+prefix: "kadok"
 security:
-  roles: security/roles.json
+  roles: "security/roles.json"
 characters:
-  folder: characters
+  folder: "characters/resources"

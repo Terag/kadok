@@ -2,23 +2,41 @@ package security
 
 import "encoding/json"
 
-// Permission is a int defined by its name. If present in a role, it means it is granted
+// Permission is a int defined by its name. If present in a role, it is considered as granted
 type Permission int
 
-// List of available permission
+// PermissionRequester interface is used by entities requiring a permission
+type PermissionRequester interface {
+	// GetPermission returns the permission required by the PermissionRequester
+	GetPermission() Permission
+}
+
+// List of available permissions
 const (
-	CallCharacter Permission = iota
+	//EmptyPermission - defines a a special permission that means no permission. Used by PermissionOwner that do not own a permission.
+	EmptyPermission Permission = iota
+	//CallCharacter - package: main - Quote from a character
+	CallCharacter
+	//GetCharacterList - package: main - Get list of available characters
 	GetCharacterList
+	//GetHelp - package: main - Get bot information
 	GetHelp
 )
 
+// Convert a permission the associated string
 func (p Permission) String() string {
-	return [...]string{"CallCharacter", "GetCharacterList", "GetHelp"}[p]
+	return [...]string{"EmptyPermission", "CallCharacter", "GetCharacterList", "GetHelp"}[p]
+}
+
+// Implementation of the interface PermissionOwner for the Permission type
+func (p Permission) GetPermission() Permission {
+	return p
 }
 
 // StringToPermission Convert a string to a Permission type
 func StringToPermission(s string) Permission {
 	return map[string]Permission{
+		"EmptyPermission":  EmptyPermission,
 		"CallCharacter":    CallCharacter,
 		"GetCharacterList": GetCharacterList,
 		"GetHelp":          GetHelp,
@@ -53,7 +71,7 @@ func (r Role) Find(permission Permission) int {
 	return -1
 }
 
-// IsGranted check if the permission is granted to the role
+// IsGranted check if the permission is granted to the role or one of its parents
 func (r Role) IsGranted(permission Permission) bool {
 	result := r.Find(permission) > -1
 	if !result && r.Parent != nil {
