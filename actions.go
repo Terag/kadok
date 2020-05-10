@@ -1,44 +1,10 @@
-# Developers Documentation
-
-The purpose of this page is to help you understand how Kadok is organized.
-
-## Code Organization
-
-The main package holds the global structure of the bot and is also the only package importing and using the SDK DiscordGo.
-Other packages are responsible to deliver domain specific features such as security features or characters features.
-
-When you find yourself developing features for a new category, please create the associated package containing
-the functions associated to your category.
-
-If the category needs a configuration or load external files, you should take example on other packages and create
-a custom Properties structure with its own UnmarshalYAML implementation. You then can add it to the Properties structure
-in the main package.
-
-## How to add a Feature
-
-In this example, we assume that the functions required by your feature already exist in the right package.
-The objective here is to add it to the current action tree and make it callable by the users.
-
-The action tree is the hierarchy of possible actions. Most of the actions have the option to implement a help feature that can
-called like this `kadok <you-command> help` (example: `kadok minecraft help`, it can also be called on the root command `kadok help` for general information about the bot).
-Example of commands hierarchy:
-
-```
- kadok
- ├─ aqui
- ├─ ping
- ├─ pong
- ├─ minecraft
- |    ├─ status
- |    ├─ whitelist <username>
- |    └─ blacklist <username>
- └─ dice <dices-pattern>
-```
-
-In Kadok, you can add an action to the current action tree by creating an Action structure.
-
-```go
 package main
+
+import (
+	"github.com/Terag/kadok/security"
+	"github.com/bwmarrin/discordgo"
+	"strings"
+)
 
 // ExecuteAction is the function type to implement with an Action
 type ExecuteAction func(s *discordgo.Session, m *discordgo.MessageCreate) (string, error)
@@ -83,22 +49,38 @@ type Action struct {
 	// The function to execute when the action is called
 	Execute func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error)
 }
-```
 
-For that you simply have to add a new Action to the list of available Actions as a global variable.
+// GetPermission is used with the security module to check the permission of the action
+func (action *Action) GetPermission() security.Permission {
+	return action.Permission
+}
 
-Don't forget to add a permission in security/rbac.go if you need a new permission. It will directly by available for use in the configuration files.
+// NotImplementedExecute to use if Execute is not implemented
+var NotImplementedExecute = func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
+	return "Oups ! Je sais pas faire !", nil
+}
 
-You then need to reference it in the parent action for it to be added to the hierarchy.
-The key in the map should be UPPERCASE as the bot is case-insensitive.
+var (
+	// PingAction for Kadok to respond pong
+	PingAction = Action{
+		security.GetCharacterList,
+		"Kadok il dit Pong!",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
+			return "À Kadoc ! À Kadoc ! Pong!", nil
+		},
+	}
 
-The RootAction is the root node of the tree. It is called first by Kadok to resolve the action.
+	// PongAction for Kadok to respond ping
+	PongAction = Action{
+		security.GetCharacterList,
+		"Kadok il dit Pong!",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
+			return "À Kadoc ! À Kadoc ! Ping!", nil
+		},
+	}
 
-Examples:
-```go
-package main
-
-var(
 	// GetCharactersAction to retrieve the list of available characters
 	GetCharactersAction = Action{
 		security.GetCharacterList,
@@ -127,4 +109,3 @@ var(
 		NotImplementedExecute,
 	}
 )
-```

@@ -2,7 +2,7 @@ package security
 
 import "testing"
 
-func LoadRolesTree(t *testing.T) {
+func TestLoadRolesTree(t *testing.T) {
 	rolesTree, err := MakeRolesTreeFromFile("roles.json")
 	if err != nil {
 		t.Errorf("Error loading all roles member, invalid number, error: %v", err)
