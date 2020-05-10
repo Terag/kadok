@@ -64,6 +64,8 @@ characters:
 
 The security package is one of the most important package to configure since it will ensure that the bot works well with your guild. The name of the roles that Kadok MUST be the same from what your guild uses. However, you can create non discord roles in order to make full use of the permissions inheritance.
 
+> As of today, the bot is mono-guild only due to the internal structure of the permissions. If you try to run it on multiple guilds, it will work, however you may have wrong permissions granted when calling the bot
+
 Available values for Permissions:
 
  - GetHelp
