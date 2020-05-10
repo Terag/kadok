@@ -1,3 +1,20 @@
+// Kadok is a bot developed for the Discord Guild "Les petits pedestres". It aims to provide fun and useful functionnalities for the Guilde Members.
+//
+// The code of Kadok is open source, you can use it and modify it as long as you follow the GNU_v3 licence terms.
+//
+// The current available features are:
+//
+// 1. Play ping pong
+//
+// 2. Quote characters from Kaamelott universe (and even more!)
+//
+// 3. Manage features' permission based on Discord roles
+//
+// This documentation is mainly to help developers to understand how the inside of Kadok works
+// To find more on how to start and configure the bot, please visit the wiki page: https://github.com/terag/kadok/wiki
+//
+// Main package holds the global structure of bot and is also the only package importing the SDK DiscordGo.
+// Other packages are responsible to deliver domain specific features such as security features or characters features.
 package main
 
 import (
@@ -9,42 +26,40 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
+	"github.com/Terag/kadok/characters"
 	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
 	"gopkg.in/yaml.v2"
 )
 
-// Properties structure. Default from properties.yaml
+// Properties is used to easily load packages' properties from a single yaml properties file
+//
+// In order to simplify the initialization of Kadok and left the responsibility of the configuration format to the relevant packages.
+// Each package CAN implement a Properties structure and add it to the main package structure.
+// The configuration structure will automatically be taken into account into the bot properties file.
+//
+// Properties is a struct in which each field is a Properties structure of a sub-package.
+// The Properties structure of a package MUST implement the Unmarshaler interface https://godoc.org/gopkg.in/yaml.v2#Unmarshaler
 type Properties struct {
-	Characters struct {
-		Folder string `yaml:"folder"`
-		List   []Character
-	}
-	Audio struct {
-		Folder string `yaml:"folder"`
-	}
-	Security struct {
-		RolesConfiguration string `yaml:"roles"`
-	}
+	//Prefix value used to call the bot
+	Prefix     string                `yaml:"prefix"`
+	Characters characters.Properties `yaml:"characters"`
+	Security   security.Properties   `yaml:"security"`
 }
 
 // Variables used globally
 var (
-	Token         string
+	// Bot token to access Discord API
+	Token string
+	// Instance of properties structure
 	Configuration Properties
-	Buffer        [][]byte
-	RolesTree     security.RolesTree
 )
 
-const sampleRate = 48000
-const channels = 2 // 1 mono; 2 stereo
-
-var mutex = &sync.Mutex{}
-
+// Called before main to initialize global variables and configuration properties
+// It gets the flags and unmarshal the properties.yaml file, populating the global configuration.
 func init() {
 	rand.Seed(time.Now().UnixNano())
 
@@ -53,37 +68,18 @@ func init() {
 	flag.StringVar(&configPath, "p", "properties.yaml", "Properties file")
 	flag.Parse()
 
-	loadConfiguration(configPath)
-}
-
-func loadConfiguration(path string) {
-
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Config file didn't load", r)
-		}
-	}()
-
-	configFile, err := ioutil.ReadFile(path)
+	configFile, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
+		log.Fatal("yamlFile.Get err   #%v ", err)
 	}
 
 	err = yaml.Unmarshal(configFile, &Configuration)
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		log.Fatal(err)
 	}
-
-	RolesTree, err = security.MakeRolesTreeFromFile(Configuration.Security.RolesConfiguration)
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-
-	loadCharacters()
 }
 
+// main function starting the bot
 func main() {
 
 	// Create a new Discord session using the provided bot token.
@@ -109,10 +105,13 @@ func main() {
 	<-sc
 
 	// Cleanly close down the Discord session.
-	dg.Close()
+	err = dg.Close()
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
-// This function will be called (due to AddHandler above) every time a new
+// This function will be called (due to AddHandler from main()) every time a new
 // message is created on any channel that the autenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
@@ -126,41 +125,45 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		fmt.Println("Error retrieving user roles")
 		return
 	}
-	isGranted := security.MakeIsGranted(RolesTree, roles)
+	isGranted := security.MakeIsGranted(Configuration.Security.RolesHierarchy, roles)
 
-	// If the message is "ping" reply with "Pong!"
-	if strings.ToUpper(m.Content) == "PING" {
-		s.ChannelMessageSend(m.ChannelID, "À Kadoc ! À Kadoc ! Pong!")
-	}
+	if strings.ToUpper(m.Content[:len(Configuration.Prefix)]) == strings.ToUpper(Configuration.Prefix) {
+		call := strings.Fields(m.Content)
+		action, executeAction := ResolveAction(&RootAction, call[1:])
 
-	// If the message is "pong" reply with "Ping!"
-	if strings.ToUpper(m.Content) == "PONG" {
-		s.ChannelMessageSend(m.ChannelID, "À Kadoc ! À Kadoc ! Ping!")
-	}
-
-	if strings.ToUpper(m.Content) == "KADOK HELP" {
-		if isGranted(security.GetHelp) {
-			message := ""
-			message += "\nTatan elle fait du flan, elle m'a aussi dit de dire des choses intelligentes si on m'appel: 'AKadok'"
-			message += "\n'Kadok aqui' ? Je dis tous mes amis !"
-			s.ChannelMessageSend(m.ChannelID, message)
+		if isGranted(action) {
+			response, err := executeAction(s, m)
+			if err != nil {
+				fmt.Println(err)
+				_, err = s.ChannelMessageSend(m.ChannelID, "Oups problème !")
+				if err != nil {
+					fmt.Println(err)
+				}
+				return
+			}
+			if response != "" {
+				_, err = s.ChannelMessageSend(m.ChannelID, response)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}
+			return
 		}
 		return
 	}
 
-	if strings.ToUpper(m.Content) == "KADOK AQUI" {
-		if isGranted(security.GetCharacterList) {
-			displayAvailableCharacters(s, m)
-		}
-		return
-	}
-
-	if strings.ToUpper(m.Content) == "AKADOK" {
-		s.ChannelMessageSend(m.ChannelID, "Mordu, mordu mordu moooooooooooooooordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu mordu morduuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!!!")
-		return
-	}
-
+	// Check if a character can be quoted then quote it
 	if isGranted(security.CallCharacter) {
-		handleCalledCharacter(s, m)
+		quote, err := characters.GetQuoteFromMessage(Configuration.Characters.List, m.Content)
+		if err != nil {
+			return
+		}
+		if quote != "" {
+			_, err = s.ChannelMessageSend(m.ChannelID, quote)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+		return
 	}
 }
