@@ -13,10 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Set up Go 1.13
+    - name: Get current time
+      uses: 1466587594/get-current-time@v1
+      id: current-time
+
+    - name: Set up Go 1.14
       uses: actions/setup-go@v1
       with:
-        go-version: 1.13
+        go-version: 1.14
       id: go
 
     - name: Check out code into the Go module directory
@@ -30,5 +34,20 @@ jobs:
             dep ensure
         fi
 
-    - name: Build
-      run: go build -v .
+    - name: Build for linux/amd64
+      env:
+        GO_VERSION: v1.14
+        TIME: "${{ steps.current-time.outputs.time }}"
+      run: GOOS=linux GOARCH=amd64 go build -v -o bin/kadok -ldflags "-X main.Version=$GITHUB_REF -X main.BuildDate=$TIME -X main.GitCommit=$GITHUB_SHA -X main.GoVersion=$GO_VERSION"
+
+    - name: Build for windows/amd64
+      env:
+        GO_VERSION: v1.14
+        TIME: "${{ steps.current-time.outputs.time }}"
+      run: GOOS=windows GOARCH=amd64 go build -v -o bin/kadok.exe -ldflags "-X main.Version=$GITHUB_REF -X main.BuildDate=$TIME -X main.GitCommit=$GITHUB_SHA -X main.GoVersion=$GO_VERSION"
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: kadok
+        path: bin/*
