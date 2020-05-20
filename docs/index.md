@@ -1,3 +1,4 @@
+![Go](https://github.com/Terag/kadok/workflows/Go/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Terag/kadok)](https://goreportcard.com/report/github.com/Terag/kadok)
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/Terag/kadok)
 [![Release](https://img.shields.io/github/v/release/Terag/kadok.svg?style=flat-square)](https://github.com/Terag/kadok/releases/latest)
