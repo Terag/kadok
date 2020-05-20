@@ -66,8 +66,6 @@ var (
 	BuildDate string
 	// Git commit reference of the build
 	GitCommit string
-	// List of git repository contributors
-	Contributors string
 	// Version of go used to build Kadok
 	GoVersion string
 	// License name is static
@@ -105,9 +103,6 @@ func init() {
 		os.Exit(0)
 	case *infoFlag:
 		fmt.Println(About)
-		if Contributors != "" {
-			fmt.Println("Contributors: " + Contributors)
-		}
 		fmt.Println("Licensed under " + LicenseName)
 		fmt.Println("Full license: " + LicenseUrl)
 		os.Exit(0)
