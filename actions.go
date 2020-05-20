@@ -61,6 +61,31 @@ var NotImplementedExecute = func(s *discordgo.Session, m *discordgo.MessageCreat
 }
 
 var (
+	// RootAction is the first action call by Kadok for resolve
+	StatusAction = Action{
+		security.EmptyPermission,
+		"\nJe te dis ce que j'ai dans mon ventre !",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
+			message := ""
+			message += "\n> " + About
+			message += "\n> **Licensed under:** " + LicenseName
+			message += "\n> **Full license:** " + LicenseUrl
+			message += "\n> "
+			if Version != "" {
+				message += "\n> **Version:** `" + Version + "`"
+			} else {
+				message += "\n> **Version:** `undefined`"
+			}
+			if GitCommit != "" {
+				message += "\n> **Build commit:** `" + GitCommit + "`"
+			}
+			message += "\n> **Build date:** `" + BuildDate + "`"
+			message += "\n> **Go:** `" + GoVersion + "`"
+			return message, nil
+		},
+	}
+
 	// PingAction for Kadok to respond pong
 	PingAction = Action{
 		security.GetCharacterList,
