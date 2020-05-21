@@ -156,7 +156,7 @@ The properties are:
 
  - **folder:** The path of the folder from which the characters are generated.
 
-A character is generated from a json file and will take the name of the file. For example, arthur.json becomes arthur for the bot.
+A character is generated from a json file and will take the name specified in the file.
 
 Example for arthur.json
 
