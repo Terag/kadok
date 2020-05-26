@@ -127,9 +127,10 @@ var (
 		security.GetHelp,
 		"Tatan elle fait du flan, elle m'a aussi dit de dire des choses intelligentes si on m'appel: 'AKadok' \n'Kadok aqui' ? Je dis tous mes amis !",
 		map[string]*Action{
-			"AQUI": &GetCharactersAction,
-			"PING": &PingAction,
-			"PONG": &PongAction,
+			"AQUI":  &GetCharactersAction,
+			"PING":  &PingAction,
+			"PONG":  &PongAction,
+			"TATAN": &StatusAction,
 		},
 		NotImplementedExecute,
 	}
