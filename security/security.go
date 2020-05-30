@@ -128,8 +128,10 @@ func MakeIsGranted(rolesTree RolesTree, playerDiscordRoles []string) func(permis
 		}
 		// Check that the permission is granted
 		for _, role := range playerDiscordRoles {
-			if rolesTree.Roles[role].IsGranted(entity.GetPermission()) {
-				return true
+			if treeRole, ok := rolesTree.Roles[role]; ok {
+				if treeRole.IsGranted(entity.GetPermission()) {
+					return true
+				}
 			}
 		}
 		return false
