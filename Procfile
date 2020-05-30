@@ -1,0 +1,1 @@
+worker: bin/kadok -t $API_TOKEN
