@@ -61,7 +61,7 @@ var (
 // Variables set at compilation time. Used to provide general information about the bot
 var (
 	// Version of the bot. It correspond to the associated git tag
-	Version string
+	Version = "0.1.0"
 	// UTC date of the build run
 	BuildDate string
 	// Git commit reference of the build
@@ -98,8 +98,12 @@ func init() {
 		if GitCommit != "" {
 			fmt.Println("Build commit: " + GitCommit)
 		}
-		fmt.Println("Build date: " + BuildDate)
-		fmt.Print("Go: " + GoVersion)
+		if BuildDate != "" {
+			fmt.Println("Build date: " + BuildDate)
+		}
+		if GoVersion != "" {
+			fmt.Print("Go: " + GoVersion)
+		}
 		os.Exit(0)
 	case *infoFlag:
 		fmt.Println(About)
