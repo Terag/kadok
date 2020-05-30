@@ -74,6 +74,8 @@ var (
 	LicenseUrl = "https://www.gnu.org/licenses/gpl-3.0-standalone.html"
 	// Short description
 	About = "Kadok is a Discord bot firstly developed for the Guild \"Les petits pedestres\". It aims to provide fun and useful functionalities for the Guild Members."
+	// Url of the documentation
+	Url = "https://kadok.pedestres.fr"
 )
 
 // Called before main to initialize global variables and configuration properties
@@ -109,6 +111,7 @@ func init() {
 		fmt.Println(About)
 		fmt.Println("Licensed under " + LicenseName)
 		fmt.Println("Full license: " + LicenseUrl)
+		fmt.Println("For more: " + Url)
 		os.Exit(0)
 	}
 
