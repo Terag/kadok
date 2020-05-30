@@ -115,6 +115,11 @@ func main() {
 // message is created on any channel that the autenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
+	// Ignore all messages created by the bot itself
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
 	// Prevent the bot from crashing in the event of the goroutine panicking
 	// It also returns an "Oups problème !" to inform the user that an error happend
 	defer func() {
@@ -128,11 +133,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}()
 
-	// Ignore all messages created by the bot itself
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-
 	roles, err := GetUserRoles(s, m)
 	if err != nil {
 		fmt.Println("Error retrieving user roles")
@@ -140,7 +140,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	isGranted := security.MakeIsGranted(Configuration.Security.RolesHierarchy, roles)
 
-	if strings.ToUpper(m.Content[:len(Configuration.Prefix)]) == strings.ToUpper(Configuration.Prefix) {
+	// Check if the first letters of the message match with the bot command prefix
+	if len(m.Content) >= len(Configuration.Prefix) && strings.ToUpper(m.Content[:len(Configuration.Prefix)]) == strings.ToUpper(Configuration.Prefix) {
 		call := strings.Fields(m.Content)
 		action, executeAction := ResolveAction(&RootAction, call[1:])
 
