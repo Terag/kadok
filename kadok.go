@@ -115,6 +115,19 @@ func main() {
 // message is created on any channel that the autenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
+	// Prevent the bot from crashing in the event of the goroutine panicking
+	// It also returns an "Oups problème !" to inform the user that an error happend
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Kadok paaaaaanic !")
+			fmt.Println(r)
+			_, err := s.ChannelMessageSend(m.ChannelID, "Oups problème !")
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}()
+
 	// Ignore all messages created by the bot itself
 	if m.Author.ID == s.State.User.ID {
 		return
