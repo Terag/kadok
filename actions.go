@@ -61,7 +61,7 @@ var NotImplementedExecute = func(s *discordgo.Session, m *discordgo.MessageCreat
 }
 
 var (
-	// RootAction is the first action call by Kadok for resolve
+	// StatusAction for kadok to respond with general information about the itself
 	StatusAction = Action{
 		security.EmptyPermission,
 		"\nJe te dis ce que j'ai dans mon ventre !",
