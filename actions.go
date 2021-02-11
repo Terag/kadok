@@ -1,10 +1,23 @@
 package main
 
 import (
+	"bytes"
+	"path"
+	"path/filepath"
+	"strings"
+	"text/template"
+
 	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
-	"strings"
 )
+
+// TplParams as the standard information passed to an action template
+type TplParams struct {
+	Message    discordgo.Message
+	Infos      Infos
+	Parameters []string
+	Data       map[string]interface{}
+}
 
 // ExecuteAction is the function type to implement with an Action
 type ExecuteAction func(s *discordgo.Session, m *discordgo.MessageCreate) (string, error)
@@ -46,18 +59,51 @@ type Action struct {
 	Information string
 	// The sub actions in the hierarchy. They do not inherit the permission requirement
 	SubActions map[string]*Action
-	// The function to execute when the action is called
-	Execute func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error)
+	// Executed on call to format data passed to template
+	GetData func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{}
+	// Path to the action template
+	Template string
+}
+
+func getFuncMap(parameters []string) template.FuncMap {
+	return template.FuncMap(template.FuncMap{
+		"withParams": func(param string) bool {
+			for _, p := range parameters {
+				if p == param {
+					return true
+				}
+			}
+			return false
+		},
+	})
+}
+
+// GetTemplate resolves template file
+func (a *Action) GetTemplate(parameters []string) *template.Template {
+	var fullPath = path.Join(Configuration.Templates, a.Template)
+	return template.Must(template.New(filepath.Base(fullPath)).Funcs(getFuncMap(parameters)).ParseFiles(fullPath))
+}
+
+// Execute is the function to execute when the action is called
+func (a *Action) Execute(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
+	var tpl bytes.Buffer
+	var err = a.GetTemplate(parameters).Execute(&tpl, &TplParams{
+		*m.Message,
+		GetInfos(),
+		parameters,
+		a.GetData(s, m, parameters),
+	})
+	return tpl.String(), err
 }
 
 // GetPermission is used with the security module to check the permission of the action
-func (action *Action) GetPermission() security.Permission {
-	return action.Permission
+func (a *Action) GetPermission() security.Permission {
+	return a.Permission
 }
 
-// NotImplementedExecute to use if Execute is not implemented
-var NotImplementedExecute = func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
-	return "Oups ! Je sais pas faire !", nil
+// EmptyData is an helper to instanciate an action that doesn't rely on data
+func EmptyData(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+	return make(map[string]interface{})
 }
 
 var (
@@ -66,44 +112,8 @@ var (
 		security.EmptyPermission,
 		"\nJe te dis ce que j'ai dans mon ventre !",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
-			message := ""
-			message += "\n> " + About
-			message += "\n> **Licensed under:** " + LicenseName
-			message += "\n> **Full license:** " + LicenseUrl
-			message += "\n> "
-			if Version != "" {
-				message += "\n> **Version:** `" + Version + "`"
-			} else {
-				message += "\n> **Version:** `undefined`"
-			}
-			if GitCommit != "" {
-				message += "\n> **Build commit:** `" + GitCommit + "`"
-			}
-			message += "\n> **Build date:** `" + BuildDate + "`"
-			message += "\n> **Go:** `" + GoVersion + "`"
-			return message, nil
-		},
-	}
-
-	// PingAction for Kadok to respond pong
-	PingAction = Action{
-		security.GetCharacterList,
-		"Kadok il dit Pong!",
-		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
-			return "À Kadoc ! À Kadoc ! Pong!", nil
-		},
-	}
-
-	// PongAction for Kadok to respond ping
-	PongAction = Action{
-		security.GetCharacterList,
-		"Kadok il dit Pong!",
-		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
-			return "À Kadoc ! À Kadoc ! Ping!", nil
-		},
+		EmptyData,
+		"status.tmpl",
 	}
 
 	// GetCharactersAction to retrieve the list of available characters
@@ -111,15 +121,12 @@ var (
 		security.GetCharacterList,
 		"C'est Kadok qui a pleins d'amis",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
-			message := ""
-			message += "\nLe caca des pigeons, c'est caca. Si tu parle d'un de mes amis, je te dirai ce qu'il a dit."
-			message += "\nJ'ai pleins d'amis à Kaamelott:"
-			for _, character := range Configuration.Characters.List {
-				message += "\n- " + character.Name
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			return map[string]interface{}{
+				"Characters": Configuration.Characters.List,
 			}
-			return message, nil
 		},
+		"aqui.tmpl",
 	}
 
 	// RootAction is the first action call by Kadok for resolve
@@ -128,10 +135,9 @@ var (
 		"Tatan elle fait du flan, elle m'a aussi dit de dire des choses intelligentes si on m'appel: 'AKadok' \n'Kadok aqui' ? Je dis tous mes amis !",
 		map[string]*Action{
 			"AQUI":  &GetCharactersAction,
-			"PING":  &PingAction,
-			"PONG":  &PongAction,
 			"TATAN": &StatusAction,
 		},
-		NotImplementedExecute,
+		EmptyData,
+		"404.tmpl",
 	}
 )
