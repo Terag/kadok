@@ -1,0 +1,6 @@
+prefix: "kadok"
+security:
+  roles: "assets/roles.json"
+characters:
+  folder: "assets/characters"
+templates: "assets/templates"

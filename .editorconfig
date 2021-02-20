@@ -18,5 +18,8 @@ trim_trailing_whitespace = false
 
 eclint_indent_style = unset
 
+[*.tmpl]
+insert_final_newline = false
+
 [Dockerfile]
 indent_size = 4

@@ -7,8 +7,6 @@ Commands hierarchy:
 ```
  kadok
  ├─ aqui
- ├─ ping
- ├─ pong
  └─ tatan
 ```
 
@@ -36,22 +34,12 @@ Returns available characters for quotes.
 ### Tatan (Status)
 
 ```
-kadok tatan
+kadok tatan [plus]
 ```
 
 **Permission**: _Empty_
 
 Returns general information regarding the bot. Such as build information and licenses.
-
-### Ping / Pong
-
-```
-kadok <ping|pong>
-```
-
-**Permission**: _Empty_
-
-Returns ping or pong.
 
 ### Quoting
 

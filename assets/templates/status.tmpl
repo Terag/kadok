@@ -1,0 +1,25 @@
+> {{ .Infos.About }}
+
+**Licensed under:** {{ .Infos.LicenseName }}
+**Full license:** {{ .Infos.LicenseURL }}
+**Contributors:** {{ .Infos.Contributors }}
+
+{{- if .Infos.Version }}
+**Version:** {{ .Infos.Version }}
+{{ end }}
+
+{{- if (withParams "plus") }}
+-----------------
+
+{{ if .Infos.GitCommit -}}
+**Build commit:**  {{ .Infos.GitCommit }}
+{{ end }}
+
+{{- if .Infos.BuildDate -}}
+**Build date:** {{ .Infos.BuildDate }}
+{{ end }}
+
+{{- if .Infos.GoVersion -}}
+**Go:** {{ .Infos.GoVersion }}
+{{ end }}
+{{ end -}}
