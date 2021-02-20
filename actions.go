@@ -65,6 +65,7 @@ type Action struct {
 	Template string
 }
 
+// return a FuncMap available within all our templates as helpers
 func getFuncMap(parameters []string) template.FuncMap {
 	return template.FuncMap(template.FuncMap{
 		"withParams": func(param string) bool {
@@ -81,6 +82,9 @@ func getFuncMap(parameters []string) template.FuncMap {
 // GetTemplate resolves template file
 func (a *Action) GetTemplate(parameters []string) *template.Template {
 	var fullPath = path.Join(Configuration.Templates, a.Template)
+	// In order to pass the function map to the file you need to already have an instance of template.
+	// In order for the template to be valid it needs to have the file name as template name which explains
+	// the New with file base then the functions map then the file parsing.
 	return template.Must(template.New(filepath.Base(fullPath)).Funcs(getFuncMap(parameters)).ParseFiles(fullPath))
 }
 
