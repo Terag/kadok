@@ -1,0 +1,6 @@
+> Le caca des pigeons, c'est caca. Si tu parle d'un de mes amis, je te dirai ce qu'il a dit.
+> J'ai pleins d'amis à Kaamelott:
+
+{{- range $c := .Data.Characters }}
+>   - {{ $c.Name }}
+{{- end -}}

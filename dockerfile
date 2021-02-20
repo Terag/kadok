@@ -11,7 +11,5 @@ FROM alpine
 ENV TOKEN=
 WORKDIR /go/app
 COPY --from=builder /go/app/src/kadok /go/app/kadok
-COPY ./characters/resources /go/app/characters/resources
-COPY ./security/roles.json /go/app/security/roles.json
-COPY ./properties.yaml /go/app/properties.yaml
+COPY ./assets ./assets
 CMD /go/app/kadok -t $TOKEN

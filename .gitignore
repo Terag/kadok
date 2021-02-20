@@ -181,3 +181,6 @@ $RECYCLE.BIN/
 # Each team member has its own environment to work on Kadok. The IDE files are fully removed as of today.
 .vscode/**
 .idea/**
+
+docs/_site
+docs/.jekyll-cache

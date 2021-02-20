@@ -4,8 +4,6 @@
 //
 // The current available features are:
 //
-// 1. Play ping pong
-//
 // 2. Quote characters from Kaamelott universe (and even more!)
 //
 // 3. Manage features' permission based on Discord roles
@@ -48,6 +46,7 @@ type Properties struct {
 	Prefix     string                `yaml:"prefix"`
 	Characters characters.Properties `yaml:"characters"`
 	Security   security.Properties   `yaml:"security"`
+	Templates  string                `yaml:"templates"`
 }
 
 // Variables used globally
@@ -56,26 +55,6 @@ var (
 	Token string
 	// Instance of properties structure
 	Configuration Properties
-)
-
-// Variables set at compilation time. Used to provide general information about the bot
-var (
-	// Version of the bot. It correspond to the associated git tag
-	Version = "0.1.0"
-	// UTC date of the build run
-	BuildDate string
-	// Git commit reference of the build
-	GitCommit string
-	// Version of go used to build Kadok
-	GoVersion string
-	// License name is static
-	LicenseName = "GNU General Public License v3.0"
-	// License url is static
-	LicenseUrl = "https://www.gnu.org/licenses/gpl-3.0-standalone.html"
-	// Short description
-	About = "Kadok is a Discord bot firstly developed for the Guild \"Les petits pedestres\". It aims to provide fun and useful functionalities for the Guild Members."
-	// Url of the documentation
-	Url = "https://kadok.pedestres.fr"
 )
 
 // Called before main to initialize global variables and configuration properties
@@ -88,30 +67,32 @@ func init() {
 	versionFlag := flag.Bool("v", false, "Print Kadok version and build information")
 	infoFlag := flag.Bool("i", false, "Print Kadok information and credits")
 	flag.StringVar(&Token, "t", "", "Bot's token to connect to discord")
-	flag.StringVar(&configPath, "p", "properties.yaml", "Properties file, default 'properties.yaml'")
+	flag.StringVar(&configPath, "p", "assets/properties.yaml", "Properties file, default 'assets/properties.yaml'")
 	flag.Parse()
+
+	var info = GetInfos()
 
 	switch {
 	case *helpFlag:
 		flag.Usage()
 		os.Exit(0)
 	case *versionFlag:
-		fmt.Println("Version: " + Version)
-		if GitCommit != "" {
-			fmt.Println("Build commit: " + GitCommit)
+		fmt.Println("Version: " + info.Version)
+		if info.GitCommit != "" {
+			fmt.Println("Build commit: " + info.GitCommit)
 		}
-		if BuildDate != "" {
-			fmt.Println("Build date: " + BuildDate)
+		if info.BuildDate != "" {
+			fmt.Println("Build date: " + info.BuildDate)
 		}
-		if GoVersion != "" {
-			fmt.Print("Go: " + GoVersion)
+		if info.GoVersion != "" {
+			fmt.Print("Go: " + info.GoVersion)
 		}
 		os.Exit(0)
 	case *infoFlag:
-		fmt.Println(About)
-		fmt.Println("Licensed under " + LicenseName)
-		fmt.Println("Full license: " + LicenseUrl)
-		fmt.Println("For more: " + Url)
+		fmt.Println(info.About)
+		fmt.Println("Licensed under " + info.LicenseName)
+		fmt.Println("Full license: " + info.LicenseURL)
+		fmt.Println("For more: " + info.URL)
 		os.Exit(0)
 	}
 
@@ -225,7 +206,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 		if quote != "" {
-			_, err = s.ChannelMessageSend(m.ChannelID, quote)
+			_, err = s.ChannelMessageSend(m.ChannelID, "> "+quote)
 			if err != nil {
 				fmt.Println(err)
 			}
