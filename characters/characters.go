@@ -89,18 +89,22 @@ func MakeCharactersSliceFromFolder(folder string) ([]Character, error) {
 	return characters, nil
 }
 
-// TryGetQuoteFromMessage returns a random quote from a character if its name is found in the message
+// GetQuoteFromMessage returns a random quote from a character if its name is found in the message
 func GetQuoteFromMessage(characters []Character, message string) (string, error) {
 	for _, character := range characters {
-		if strings.Index(strings.ToUpper(message), strings.ToUpper(character.Name)) > -1 {
+		upperCaseMessage := strings.Split(strings.ToUpper(message), " ")
+		upperCaseCharacter := strings.ToUpper(character.Name)
 
-			if len(character.Sentences) < 1 {
-				return "", errors.New("Error, empty character quotes for " + character.Name)
+		for _, word := range upperCaseMessage {
+			if upperCaseCharacter == word {
+				if len(character.Sentences) < 1 {
+					return "", errors.New("Error, empty character quotes for " + character.Name)
+				}
+
+				index := rand.Intn(len(character.Sentences))
+
+				return character.Sentences[index], nil
 			}
-
-			index := rand.Intn(len(character.Sentences))
-
-			return character.Sentences[index], nil
 		}
 	}
 	return "", errors.New("no quote found")
