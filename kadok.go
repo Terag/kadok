@@ -103,7 +103,7 @@ func init() {
 
 	configFile, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		log.Fatal("yamlFile.Get err   #%v ", err)
+		log.Fatal("yamlFile.Get err: ", err)
 	}
 
 	err = yaml.Unmarshal(configFile, &Configuration)

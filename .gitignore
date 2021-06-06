@@ -184,3 +184,6 @@ $RECYCLE.BIN/
 
 docs/_site
 docs/.jekyll-cache
+
+# Test Coverage
+.testCoverage.txt
