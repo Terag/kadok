@@ -1,4 +1,4 @@
-FROM golang:1.15.8-alpine AS builder
+FROM golang:1.17-alpine AS builder
 ARG BUILD_VERSION=snapshot
 ARG GIT_COMMIT=current
 ARG GIT_CONTRIBUTORS=kadok_team

@@ -1,5 +1,7 @@
 package main
 
+import "runtime"
+
 // Variables set at compilation time. Used to provide general information about the bot
 var (
 	// Version of the bot. It correspond to the associated git tag
@@ -8,8 +10,6 @@ var (
 	BuildDate string
 	// Git commit reference of the build
 	GitCommit string
-	// Version of go used to build Kadok
-	GoVersion string
 	// License name is static
 	LicenseName = "GNU General Public License v3.0"
 	// License url is static
@@ -42,7 +42,7 @@ func GetInfos() Infos {
 		Version,
 		GitCommit,
 		BuildDate,
-		GoVersion,
+		runtime.Version(),
 		URL,
 		Contributors,
 	}
