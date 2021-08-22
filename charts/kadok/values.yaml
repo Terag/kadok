@@ -1,0 +1,38 @@
+# Default values for kadok.
+
+# For retrieving kadok image
+image:
+  repository: gitlab.beyond-undefined.fr:5050/bots/kadok
+  pullPolicy: Always
+  tag: latest
+
+# The pullSecrets to use for retrieving Kadok's image
+imagePullSecrets:
+  - name: ""
+
+# If the registry secret does not yet exist in the cluster, create one
+registrySecret:
+  create: false
+  name: regcred-kadok
+  registry: ""
+  username: kubernetes
+  password: ""
+
+# Kadok specific variables
+kadok:
+  token: ""
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 246Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+strategyType: RollingUpdate
+
+# Gitlab environment variables
+gitlab:
+  env: ""
+  app: ""

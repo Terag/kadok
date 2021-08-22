@@ -1,0 +1,5 @@
+Kadok has been deployed using the discord bot token you configured.
+
+The code of Kadok is open source, you can use it and modify it as long as you follow the GNU_v3 licence terms.
+
+Documentation available in the repository: https://gitlab.beyond-undefined.fr/bots/kadok/-/tree/main/docs
