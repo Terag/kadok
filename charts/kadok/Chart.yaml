@@ -1,0 +1,14 @@
+apiVersion: v2
+name: kadok
+description: >
+  Kadok is a bot developed for the Discord Guild "Les petits pedestres".
+  It aims to provide fun and useful functionnalities for the Guild Members.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+- discord
+- bot
+maintainers:
+- name: terag
+  email: victor@rouquette.me

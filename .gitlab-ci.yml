@@ -1,27 +1,34 @@
 stages:
   - test
   - delivery
+  - deploy
 
 variables:
   IMAGE_TAG: "snapshot"
 
 workflow:
   rules:
-    - if: $CI_MERGE_REQUEST_ID != null
+    - if: '$CI_COMMIT_TAG != null'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event" &&  $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       variables:
         IMAGE_TAG: merge-$CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_TAG != null
-      variables:
-        IMAGE_TAG: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == "main"
+        KADOK_ENV: staging
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+        KADOK_ENV: production
 
-test:
+test_code:
   stage: test
   image: golang:1.17
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - changes:
+      - "*.go"
+      - go.mod
+      - go.sum
   script:
     - go install github.com/t-yuki/gocover-cobertura@latest
     - go install github.com/jstemmer/go-junit-report@latest
@@ -49,7 +56,30 @@ test:
       cobertura: coverage.xml
       junit: junit.xml
 
-delivery:
+test_chart:
+  stage: test
+  image: devth/helm:latest
+  environment:
+    action: prepare
+    name: kadok-staging
+  rules:
+    - changes:
+      - charts/**/*
+  script:
+    - >
+      helm lint
+      --set image.repository=$CI_REGISTRY_IMAGE
+      --set image.tag=$IMAGE_TAG
+      --set 'podAnnotations.app\.gitlab\.com/env=${CI_ENVIRONMENT_SLUG}'
+      --set 'podAnnotations.app\.gitlab\.com/app=${CI_PROJECT_PATH_SLUG}'
+      --set imagePullSecrets[0].name=regcred-kadok
+      --set registrySecret.create=true
+      --set registrySecret.registry=$CI_REGISTRY
+      --set registrySecret.password=$REGISTRY_TOKEN
+      --set kadok.token=$DISCORD_TOKEN
+      charts/kadok
+
+delivery_image:
   stage: delivery
   image:
     name: gcr.io/kaniko-project/executor:debug
@@ -65,4 +95,29 @@ delivery:
       --build-arg=BUILD_VERSION=$IMAGE_TAG
       --build-arg=GIT_COMMIT=$CI_COMMIT_SHA
 
-        
+deploy_kadok:
+  stage: deploy
+  image: devth/helm:latest
+  environment:
+    name: $KADOK_ENV
+    kubernetes:
+      namespace: kadok-$KADOK_ENV
+  script:
+    - >
+      helm upgrade
+      --install
+      --cleanup-on-fail
+      --atomic
+      --create-namespace
+      --namespace $KUBE_NAMESPACE
+      --set image.repository=$CI_REGISTRY_IMAGE
+      --set image.tag=$IMAGE_TAG
+      --set gitlab.env=${CI_ENVIRONMENT_SLUG}
+      --set gitlab.app=${CI_PROJECT_PATH_SLUG}
+      --set imagePullSecrets[0].name=regcred-kadok
+      --set registrySecret.create=true
+      --set registrySecret.registry=$CI_REGISTRY
+      --set registrySecret.password=$REGISTRY_TOKEN
+      --set kadok.token=$DISCORD_TOKEN
+      kadok-$KADOK_ENV
+      charts/kadok
