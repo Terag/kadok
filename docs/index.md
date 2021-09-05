@@ -35,9 +35,30 @@ For Discord documentation on how to create an application and add it to your Gui
 
 To install the bot locally you can run:
 
-~~~ sh
+```shell
   go install github.com/Terag/kadok
-~~~
+```
+
+### As a docker container
+
+Simply build the image and run it !
+
+```shell
+docker build -t kadok:local .
+docker run -t $DISCORD_TOKEN kadok:local
+```
+
+### Using Helm
+
+
+
+You are advised to create your own `values.yaml` based on the one from the chart.
+
+You must specify the registry where you store your kadok image as it is not provided by default.
+
+To get the default values: `helm show values charts/kadok `
+
+> For the bot configuration, the helm chart creates a ConfigMap based on the files from `charts/kadok/config`.
 
 ## Configuration
 
@@ -46,14 +67,15 @@ Roles and basic properties are customizable. The roles structure should be set i
 ### Global
 
 The global configuration of the bot is stored in a single yaml file.
-The default path for this file being: _assets/properties.yaml_
+The default path for this file being: _config/properties.yaml_
 
 This file old basic values to initialize modules. The values are separated between the packages. Each package hold the responsibility of defining the properties format.
 
 Example:
 ```yaml
+prefix: "kadok"
 security:
-  roles: "assets/roles.json"
+  roles: "config/roles.json"
 characters:
   folder: "assets/characters"
 templates: "assets/templates"
@@ -169,9 +191,9 @@ Example for arthur.json
 
 You can run it by calling it from your shell:
 
-~~~ shell script
+```shell
 kadok.exe -t <bot-token> (-p <properties-file>)
-~~~
+```
 
 Available options:
 

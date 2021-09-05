@@ -20,6 +20,8 @@ registrySecret:
 
 # Kadok specific variables
 kadok:
+  # The discord token created from https://discord.com/developers/applications.
+  # The bot needs it in order to connect to discord APIs and interact with guild members.
   token: ""
 
 resources:
@@ -32,7 +34,7 @@ resources:
 
 strategyType: RollingUpdate
 
-# Gitlab environment variables
-gitlab:
-  env: ""
-  app: ""
+# Gitlab environment variables if you run kadok in a cluster managed with gitlab
+# gitlab:
+#  env: ""
+#  app: ""

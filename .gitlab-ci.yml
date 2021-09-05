@@ -103,6 +103,7 @@ deploy_kadok:
     name: $KADOK_ENV
     kubernetes:
       namespace: kadok-$KADOK_ENV
+  resource_group: $KADOK_ENV
   script:
     - >
       helm upgrade

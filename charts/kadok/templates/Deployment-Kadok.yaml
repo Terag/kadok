@@ -27,6 +27,14 @@ spec:
                 secretKeyRef:
                   name: token-kadok
                   key: token
+          volumeMounts:
+            - name: config
+              mountPath: "go/app/config"
+              readOnly: true
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: config-kadok

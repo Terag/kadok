@@ -54,11 +54,13 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Pod Annotations
 */}}
 {{- define "kadok.annotations" -}}
+{{- if .Values.gitlab }}
 {{- if .Values.gitlab.env }}
 app.gitlab.com/env: {{ .Values.gitlab.env }}
 {{- end }}
 {{- if .Values.gitlab.app }}
 app.gitlab.com/app: {{ .Values.gitlab.app }}
+{{- end }}
 {{- end }}
 {{- end }}
 
