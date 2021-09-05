@@ -67,7 +67,7 @@ func init() {
 	versionFlag := flag.Bool("v", false, "Print Kadok version and build information")
 	infoFlag := flag.Bool("i", false, "Print Kadok information and credits")
 	flag.StringVar(&Token, "t", "", "Bot's token to connect to discord")
-	flag.StringVar(&configPath, "p", "assets/properties.yaml", "Properties file, default 'assets/properties.yaml'")
+	flag.StringVar(&configPath, "p", "config/properties.yaml", "Properties file, default 'assets/properties.yaml'")
 	flag.Parse()
 
 	var info = GetInfos()

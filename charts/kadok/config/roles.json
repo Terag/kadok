@@ -1,0 +1,19 @@
+{
+    "roles": [
+        {
+            "name": "member",
+            "parent": null,
+            "permissions": ["CallCharacter", "GetHelp", "GetCharacterList"]
+        },
+        {
+            "name": "moderator",
+            "parent": "member",
+            "permissions": []
+        },
+        {
+            "name": "administrator",
+            "parent": "moderator",
+            "permissions": []
+        }
+    ]
+}

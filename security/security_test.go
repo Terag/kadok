@@ -3,7 +3,7 @@ package security
 import "testing"
 
 func TestLoadRolesTree(t *testing.T) {
-	rolesTree, err := MakeRolesTreeFromFile("../assets/roles.json")
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
 	if err != nil {
 		t.Errorf("Error loading all roles member, invalid number, error: %v", err)
 	}
@@ -16,7 +16,7 @@ func TestLoadRolesTree(t *testing.T) {
 }
 
 func TestRolesTreeIsGranted(t *testing.T) {
-	rolesTree, err := MakeRolesTreeFromFile("../assets/roles.json")
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
 	if err != nil {
 		t.Errorf("Error loading all roles member, invalid number, error: %v", err)
 	}
