@@ -30,7 +30,7 @@ import (
 	"github.com/Terag/kadok/characters"
 	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // Properties is used to easily load packages' properties from a single yaml properties file
