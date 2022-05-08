@@ -1,0 +1,7 @@
+> Viens dans un groupe et partage des activites !
+> Tu peux être dans autant de groupes que tu veux et y a pleins de groupes à Kaamelott:
+{{- range $id, $group := .Data.Groups }}
+> - `{{ $id }}` **{{ $group.Name }}**{{ if $group.Description}} : {{$group.Description}} {{end}}
+{{- else -}}
+	> Oups, pas de groupes de disponibles !
+{{- end -}}

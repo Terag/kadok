@@ -43,10 +43,16 @@ import (
 // The Properties structure of a package MUST implement the Unmarshaler interface https://godoc.org/gopkg.in/yaml.v2#Unmarshaler
 type Properties struct {
 	//Prefix value used to call the bot
-	Prefix     string                `yaml:"prefix"`
-	Characters characters.Properties `yaml:"characters"`
-	Security   security.Properties   `yaml:"security"`
-	Templates  string                `yaml:"templates"`
+	Prefix     	string                	`yaml:"prefix"`
+	Guild		Guild					`yaml:"guild"`
+	Characters 	characters.Properties 	`yaml:"characters"`
+	Security   	security.Properties   	`yaml:"security"`
+	Templates  	string                	`yaml:"templates"`
+}
+
+type Guild struct {
+	Name	string	`yaml:"name"`
+	ID		string
 }
 
 // Variables used globally
@@ -132,6 +138,34 @@ func main() {
 		return
 	}
 
+	// Cleanly close down the Discord session.
+	defer func() {
+		err = dg.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	// Check that bot is in the right guild
+	guilds := dg.State.Guilds
+	for _, guild := range guilds {
+		guild, err = dg.Guild(guild.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if guild.Name == Configuration.Guild.Name {
+			Configuration.Guild.ID = guild.ID
+			break
+		}
+	}
+	if Configuration.Guild.ID == "" {
+		application, err := dg.Application("@me")
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Fatal("Configured guild not found. The bot must be invited in the right guild using the following link: https://discord.com/api/oauth2/authorize?client_id=" + application.ID + "&scope=bot&permissions=8")
+	}
+
 	// fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
@@ -150,6 +184,11 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Ignore all messages created by the bot itself
 	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
+	// Ignore all messages that come from another guild
+	if m.GuildID != Configuration.Guild.ID {
 		return
 	}
 

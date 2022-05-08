@@ -189,4 +189,4 @@ docs/.jekyll-cache
 .testCoverage.txt
 
 #binary
-kadok
+/kadok

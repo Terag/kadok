@@ -51,7 +51,7 @@
             "parent": "member",
             "permissions": [],
             "type": "Clan",
-            "description": "Pas complètement mais à moitie quand même !"
+            "description": "Pas complètement mais a moitie quand même !"
         },
         {
             "name": "Indépendantistes Gallois",
@@ -72,7 +72,7 @@
             "parent": "member",
             "permissions": [],
             "type": "Group",
-            "description": "(\uD83D\uDCDC-new-world) Toi aussi pars à la découverte d'un New World"
+            "description": "(\uD83D\uDCDC-new-world) Toi aussi pars a la découverte d'un New World"
         },
         {
             "name": "Vikingerus",

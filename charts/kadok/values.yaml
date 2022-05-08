@@ -23,6 +23,7 @@ kadok:
   # The discord token created from https://discord.com/developers/applications.
   # The bot needs it in order to connect to discord APIs and interact with guild members.
   token: ""
+  configs: "config-staging"
 
 resources:
   limits:

@@ -1,0 +1,5 @@
+{{- if .Data.Error -}}
+> {{.Data.Username}} : oups ! {{.Data.Error.Error}}
+{{- else -}}
+> {{.Data.Username}} bienvenue dans le groupe : {{.Data.Group.Name}}
+{{- end -}}

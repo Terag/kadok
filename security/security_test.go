@@ -1,13 +1,16 @@
 package security
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestLoadRolesTree(t *testing.T) {
 	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
 	if err != nil {
-		t.Errorf("Error loading all roles member, invalid number, error: %v", err)
+		t.Errorf("Error loading all roles, error: %v", err)
 	}
-	if len(rolesTree.Buffer) != 11 {
+	if len(rolesTree.Buffer) != 26 {
 		t.Errorf("Error loading roles, got: %v want 11", len(rolesTree.Buffer))
 	}
 	if !rolesTree.Roles["Admin - Conseil de Guerre"].IsGranted(CallCharacter) {
@@ -15,13 +18,151 @@ func TestLoadRolesTree(t *testing.T) {
 	}
 }
 
-func TestRolesTreeIsGranted(t *testing.T) {
+func TestRolesTree_IsGranted(t *testing.T) {
 	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
 	if err != nil {
-		t.Errorf("Error loading all roles member, invalid number, error: %v", err)
+		t.Errorf("Error loading all roles, error: %v", err)
 	}
 	isGranted := MakeIsGranted(rolesTree, []string{"Admin - Conseil de Guerre"})
 	if !isGranted(CallCharacter) {
 		t.Errorf("Error checking generated permission hierarchy")
 	}
+}
+
+func TestRolesTree_GetGroups(t *testing.T) {
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	if err != nil {
+		t.Errorf("Error loading all roles, error: %v", err)
+	}
+
+	groups := rolesTree.GetGroups()
+	if len(groups) != 15 {
+		t.Errorf("Error retrieving groups, expected 15 and got %v", len(groups))
+	}
+	isCubisteFound := false
+	for _, group := range groups {
+		if group.Name == "Cubiste" {
+			isCubisteFound = true
+			break
+		}
+	}
+	if !isCubisteFound {
+		t.Errorf("Error, Cubiste group was expected in the list of groups")
+	}
+}
+
+func TestRolesTree_GetClans(t *testing.T) {
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	if err != nil {
+		t.Errorf("Error loading all roles, error: %v", err)
+	}
+
+	clans := rolesTree.GetClans()
+	if len(clans) != 4 {
+		t.Errorf("Error retrieving clans, expected 4 and got %v", len(clans))
+	}
+	isPedestreSeniorsFound := false
+	for _, clan := range clans {
+		if clan.Name == "Pédèstres seniors" {
+			isPedestreSeniorsFound = true
+			break
+		}
+	}
+	if !isPedestreSeniorsFound {
+		t.Errorf("Error, Pédèstres seniors group was expected in the list of groups")
+	}
+}
+
+func TestRolesTree_JoinClan(t *testing.T) {
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	if err != nil {
+		t.Errorf("Error loading all roles, error: %v", err)
+	}
+
+	clans := rolesTree.GetClans()
+	reference := clans[0].Name
+	clansTested := make(map[string]bool, len(clans))
+	rolesTree.JoinClan(
+		func(role Role) error {
+			clansTested[role.Name] = true
+			return nil
+		},
+		func(role Role) error {
+			clansTested[role.Name] = false
+			if role.Name == reference {
+				t.Errorf("Error bad leave role, didn't expect: " + reference + " and got: " + role.Name)
+			}
+			return nil
+		},
+		reference,
+	)
+
+	for _, clan := range clans {
+		if value, ok := clansTested[clan.Name]; ok {
+			if clan.Name == reference && !value {
+				t.Errorf("Error bad join role, expected to be in : " + clan.Name)
+			} else if clan.Name != reference && value {
+				t.Errorf("Error bad leave role, didn't expect to be in : " + clan.Name)
+			}
+		} else {
+			fmt.Println("Error, did not iterate on all the available clans, missing: " + clan.Name)
+		}
+	}
+}
+
+func TestRolesTree_LeaveClan(t *testing.T) {
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	if err != nil {
+		t.Errorf("Error loading all roles, error: %v", err)
+	}
+
+	clans := rolesTree.GetClans()
+	reference := clans[0].Name
+	rolesTree.LeaveClan(
+		func(role Role) error {
+			if role.Name != reference {
+				t.Errorf("Error, didn't expect to leave: " + role.Name + " wanted to leave: " + reference)
+			}
+			return nil
+		},
+		reference,
+	)
+}
+
+func TestRolesTree_JoinGroup(t *testing.T) {
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	if err != nil {
+		t.Errorf("Error loading all roles, error: %v", err)
+	}
+
+	clans := rolesTree.GetGroups()
+	reference := clans[0].Name
+	rolesTree.JoinGroup(
+		func(role Role) error {
+			if role.Name != reference {
+				t.Errorf("Error, didn't expect to join: " + role.Name + " wanted to join: " + reference)
+			}
+			return nil
+		},
+		reference,
+	)
+}
+
+func TestRolesTree_LeaveGroup(t *testing.T) {
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	if err != nil {
+		t.Errorf("Error loading all roles, error: %v", err)
+	}
+
+	clans := rolesTree.GetGroups()
+	reference := clans[0].Name
+	rolesTree.LeaveGroup(
+		func(role Role) error {
+			if role.Name != reference {
+				t.Errorf("Error, didn't expect to leave: " + role.Name + " wanted to leave: " + reference)
+			}
+			return nil
+		},
+		reference,
+	)
 }
