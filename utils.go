@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -53,4 +55,40 @@ func GetUserRoles(s *discordgo.Session, m *discordgo.MessageCreate) ([]string, e
 		return nil, err
 	}
 	return roles, nil
+}
+
+func GetRoleID(s *discordgo.Session, guildID string, roleName string) (string, error) {
+	roles, err := s.GuildRoles(guildID)
+	if err != nil {
+		return "", err
+	}
+
+	for _, role := range roles {
+		if role.Name == roleName {
+			return role.ID, nil
+		}
+	}
+	return "",errors.New("role not found")
+}
+
+func MakeAddRole(s *discordgo.Session, m *discordgo.MessageCreate) security.AddRole {
+	return func(role security.Role) error {
+		roleID, err := GetRoleID(s, m.GuildID, role.Name)
+		if err != nil {
+			return err
+		}
+
+		return s.GuildMemberRoleAdd(m.GuildID, m.Author.ID, roleID)
+	}
+}
+
+func MakeRemoveRole(s *discordgo.Session, m *discordgo.MessageCreate) security.RemoveRole {
+	return func(role security.Role) error {
+		roleID, err := GetRoleID(s, m.GuildID, role.Name)
+		if err != nil {
+			return err
+		}
+
+		return s.GuildMemberRoleRemove(m.GuildID, m.Author.ID, roleID)
+	}
 }

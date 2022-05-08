@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "kadok.fullname" . }}
+  annotations:
+    {{- include "kadok.annotations" . | nindent 4 }}
   labels:
     {{- include "kadok.labels" . | nindent 4 }}
 spec:
@@ -37,4 +39,4 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: config-kadok
+            name: config-kadok-{{ include "kadok.configMapShortHash" . }}

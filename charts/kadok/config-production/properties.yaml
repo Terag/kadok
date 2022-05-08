@@ -1,6 +1,6 @@
-prefix: "devk"
+prefix: "kadok"
 guild:
-  name: "Kadok development team"
+  name: "Les petits pedestres"
 security:
   roles: "config/roles.json"
 characters:

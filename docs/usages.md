@@ -6,14 +6,23 @@ Commands hierarchy:
 
 ```
  kadok
+ ├─ aide
+ ├─ clan
+ |  ├─ liste
+ |  ├─ rejoindre
+ |  └─ quitter
+ ├─ groupe
+ |  ├─ liste
+ |  ├─ rejoindre
+ |  └─ quitter
  ├─ aqui
  └─ tatan
 ```
 
-### Help
+### Aide
 
 ```
-kadok help
+kadok aide
 ```
 
 **Permission:** GetHelp
@@ -34,12 +43,34 @@ Returns available characters for quotes.
 ### Tatan (Status)
 
 ```
-kadok tatan [plus]
+kadok tatan
 ```
 
 **Permission**: _Empty_
 
 Returns general information regarding the bot. Such as build information and licenses.
+
+### Groupe (liste, rejoindre, quitter)
+
+```
+kadok groupe <liste|rejoindre|quitter>
+```
+
+**Permission**: _Empty_
+
+Used to manage groups of the requesting player. A player can be part of multiple groups.
+Only roles with the type `Group` can be used
+
+### Clan (liste, rejoindre, quitter)
+
+```
+kadok clan <liste|rejoindre|quitter>
+```
+
+**Permission**: _Empty_
+
+Used to manage clans of the requesting player. A player can be part of onlye one clan.
+Only roles with the type `Clan` can be used
 
 ### Quoting
 

@@ -1,0 +1,5 @@
+{{- if .Data.Error -}}
+> {{.Data.Username}} : oups ! {{.Data.Error.Error}}
+{{- else -}}
+> {{.Data.Username}} tu manqueras chez : {{.Data.Clan.Name}}
+{{- end -}}

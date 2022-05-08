@@ -26,3 +26,4 @@ Makefile
 Procfile
 # Test Coverage
 .testCoverage.txt
+charts/

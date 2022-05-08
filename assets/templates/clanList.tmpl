@@ -1,0 +1,7 @@
+> Viens dans un clan, c'est plus marrant ! Les clans te permette d'etre un(e) membre actif/active du Discord !
+> Tu peux être que dans un clan et y a pleins de clans a Kaamelott:
+{{- range $id, $clan := .Data.Clans }}
+> - `{{ $id }}` **{{ $clan.Name }}**{{ if $clan.Description}} : {{$clan.Description}}{{end}}
+{{- else -}}
+> Oups, pas de clans de disponibles !
+{{- end -}}

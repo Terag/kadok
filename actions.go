@@ -13,10 +13,11 @@ import (
 
 // TplParams as the standard information passed to an action template
 type TplParams struct {
-	Message    discordgo.Message
-	Infos      Infos
-	Parameters []string
-	Data       map[string]interface{}
+	Message       discordgo.Message
+	Infos         Infos
+	Configuration Properties
+	Parameters    []string
+	Data          map[string]interface{}
 }
 
 // ExecuteAction is the function type to implement with an Action
@@ -39,7 +40,7 @@ func ResolveAction(rootAction *Action, call []string) (*Action, ExecuteAction) {
 // MakeExecuteAction from an action
 func MakeExecuteAction(action *Action, parameters []string) ExecuteAction {
 	// Check if there is only 1 parameter with the value "HELP"
-	if len(parameters) == 1 && strings.ToUpper(parameters[0]) == "HELP" {
+	if len(parameters) == 1 && strings.ToUpper(parameters[0]) == "AIDE" {
 		// If yes, returns an ExecuteAction that returns Action's information
 		return func(s *discordgo.Session, m *discordgo.MessageCreate) (string, error) {
 			return action.Information, nil
@@ -94,6 +95,7 @@ func (a *Action) Execute(s *discordgo.Session, m *discordgo.MessageCreate, param
 	var err = a.GetTemplate(parameters).Execute(&tpl, &TplParams{
 		*m.Message,
 		GetInfos(),
+		Configuration,
 		parameters,
 		a.GetData(s, m, parameters),
 	})
@@ -133,13 +135,144 @@ var (
 		"aqui.tmpl",
 	}
 
+	GroupRootAction = Action{
+		security.EmptyPermission,
+		"Toutes les actions qui concernent les groupes !" +
+			"> `kadok groupe liste`\n" +
+			"> `kadok groupe rejoindre <groupId|groupName>`\n" +
+			"> `kadok groupe quitter <groupId|groupName>`",
+		map[string]*Action{
+			"LISTE":     &GroupListAction,
+			"REJOINDRE": &GroupJoinAction,
+			"QUITTER":   &GroupLeaveAction,
+		},
+		EmptyData,
+		"404.tmpl",
+	}
+
+	GroupListAction = Action{
+		security.EmptyPermission,
+		"La liste des groupes disponibles !",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			groups := Configuration.Security.RolesHierarchy.GetGroups()
+			return map[string]interface{}{
+				"Groups": groups,
+			}
+		},
+		"groupList.tmpl",
+	}
+
+	GroupJoinAction = Action{
+		security.EmptyPermission,
+		"C'est ici qu'on rejoint un groupe !\n> Commande : `kadok groupe rejoindre <groupId|groupName>`",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			roleReference := strings.Join(parameters, " ")
+			addRole := MakeAddRole(s, m)
+			group, err := Configuration.Security.RolesHierarchy.JoinGroup(addRole, roleReference)
+			return map[string]interface{}{
+				"Username": m.Author.Username,
+				"Group":    group,
+				"Error":    err,
+			}
+		},
+		"groupJoin.tmpl",
+	}
+
+	GroupLeaveAction = Action{
+		security.EmptyPermission,
+		"C'est ici qu'on part d'un groupe ! Snif..\n> Commande : `kadok groupe quitter <groupId|groupName>`",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			roleReference := strings.Join(parameters, " ")
+			removeRole := MakeRemoveRole(s, m)
+			group, err := Configuration.Security.RolesHierarchy.LeaveGroup(removeRole, roleReference)
+			return map[string]interface{}{
+				"Username": m.Author.Username,
+				"Group":    group,
+				"Error":    err,
+			}
+		},
+		"groupLeave.tmpl",
+	}
+
+	ClanRootAction = Action{
+		security.EmptyPermission,
+		"Toutes les actions qui concernent les clans !\n" +
+			"> `kadok clan liste`\n" +
+			"> `kadok clan rejoindre <clanId|clanName>`\n" +
+			"> `kadok clan quitter <clanId|clanName>`",
+		map[string]*Action{
+			"LISTE":     &ClanListAction,
+			"REJOINDRE": &ClanJoinAction,
+			"QUITTER":   &ClanLeaveAction,
+		},
+		EmptyData,
+		"404.tmpl",
+	}
+
+	ClanListAction = Action{
+		security.EmptyPermission,
+		"La liste des clans disponibles !",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			clans := Configuration.Security.RolesHierarchy.GetClans()
+			return map[string]interface{}{
+				"Clans": clans,
+			}
+		},
+		"clanList.tmpl",
+	}
+
+	ClanJoinAction = Action{
+		security.EmptyPermission,
+		"C'est ici qu'on rejoint un clan !\n> Commande : `kadok clan rejoindre <clanId|clanName>`",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			roleReference := strings.Join(parameters, " ")
+			addRole := MakeAddRole(s, m)
+			removeRole := MakeRemoveRole(s, m)
+			clan, err := Configuration.Security.RolesHierarchy.JoinClan(addRole, removeRole, roleReference)
+			return map[string]interface{}{
+				"Username": m.Author.Username,
+				"Clan":     clan,
+				"Error":    err,
+			}
+		},
+		"clanJoin.tmpl",
+	}
+
+	ClanLeaveAction = Action{
+		security.EmptyPermission,
+		"C'est ici qu'on part d'un clan ! Snif..\n> Commande : `kadok clan quitter <clanId|clanName>`",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			roleReference := strings.Join(parameters, " ")
+			removeRole := MakeRemoveRole(s, m)
+			clan, err := Configuration.Security.RolesHierarchy.LeaveClan(removeRole, roleReference)
+			return map[string]interface{}{
+				"Username": m.Author.Username,
+				"Clan":     clan,
+				"Error":    err,
+			}
+		},
+		"clanLeave.tmpl",
+	}
+
 	// RootAction is the first action call by Kadok for resolve
 	RootAction = Action{
 		security.GetHelp,
-		"Tatan elle fait du flan, elle m'a aussi dit de dire des choses intelligentes si on m'appel: 'AKadok' \n'Kadok aqui' ? Je dis tous mes amis !",
+		"Tatan elle fait du flan, elle m'a aussi dit de dire des choses intelligentes si on m'appel: \n" +
+			"> - `kadok aide` je te dis ce que je fais ! Et `kadok <commande> aide` je te donne plus de details !\n" +
+			"> - `kadok aqui` ? Je dis tous mes amis !\n" +
+			"> - `kadok groupe <liste|rejoindre|quitter>` Pour voir et rejoindre un groupe ! Tu peux etre dans autant de groupes que tu veux !\n" +
+			"> - `kadok clan <liste|rejoindre|quitter>` Pour voir et rejoindre un clan ! Tu peux avoir seulement un clan !",
 		map[string]*Action{
-			"AQUI":  &GetCharactersAction,
-			"TATAN": &StatusAction,
+			"AQUI":   &GetCharactersAction,
+			"TATAN":  &StatusAction,
+			"GROUPE": &GroupRootAction,
+			"CLAN":   &ClanRootAction,
 		},
 		EmptyData,
 		"404.tmpl",

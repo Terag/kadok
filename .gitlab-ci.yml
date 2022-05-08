@@ -38,6 +38,7 @@ test_code:
       -coverprofile=coverage.txt ./... |
       bash -c 'tee >(RICHGO_FORCE_COLOR=1 richgo testfilter > /dev/stderr)' |
       go-junit-report -set-exit-code > junit.xml
+    - go tool cover -html=coverage.txt -o coverage.html
     - gocover-cobertura < coverage.txt > coverage.xml
     # The following line are required for gitlab to detect the covreage based on its regex match.
     # The regex being evaluated by gitlab is: coverage: \d+.\d+% of statements
@@ -50,6 +51,8 @@ test_code:
     when: always
     name: $CI_JOB_NAME/coverage.txt
     paths:
+      - coverage.txt
+      - coverage.html
       - coverage.xml
       - junit.xml
     reports:
@@ -77,6 +80,7 @@ test_chart:
       --set registrySecret.registry=$CI_REGISTRY
       --set registrySecret.username=$CI_DEPLOY_USER
       --set registrySecret.password=$CI_DEPLOY_PASSWORD
+      --set kadok.configs=config-$KADOK_ENV
       --set kadok.token=$DISCORD_TOKEN
       charts/kadok
 
@@ -121,6 +125,7 @@ deploy_kadok:
       --set registrySecret.registry=$CI_REGISTRY
       --set registrySecret.username=$CI_DEPLOY_USER
       --set registrySecret.password=$CI_DEPLOY_PASSWORD
+      --set kadok.configs=config-$KADOK_ENV
       --set kadok.token=$DISCORD_TOKEN
       kadok-$KADOK_ENV
       charts/kadok
