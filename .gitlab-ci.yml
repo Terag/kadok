@@ -56,7 +56,9 @@ test_code:
       - coverage.xml
       - junit.xml
     reports:
-      cobertura: coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
       junit: junit.xml
 
 test_chart:
@@ -103,10 +105,10 @@ delivery_image:
 deploy_kadok:
   stage: deploy
   image: devth/helm:latest
+  variables:
+    KUBE_NAMESPACE: rouquette-kadok-$KADOK_ENV
   environment:
     name: $KADOK_ENV
-    kubernetes:
-      namespace: kadok-$KADOK_ENV
   resource_group: $KADOK_ENV
   script:
     - >
