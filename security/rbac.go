@@ -1,7 +1,6 @@
 package security
 
 import (
-	"encoding/json"
 	"errors"
 )
 
@@ -46,10 +45,10 @@ func StringToPermission(s string) Permission {
 	}[s]
 }
 
-// UnmarshalJSON for custom Permission type
-func (p *Permission) UnmarshalJSON(b []byte) error {
+// UnmarshalYAML for custom Permission type
+func (p *Permission) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var s string
-	err := json.Unmarshal(b, &s)
+	err := unmarshal(&s)
 	if err != nil {
 		return err
 	}
@@ -73,19 +72,19 @@ const (
 // StringToRoleType Convert a string to a RoleType
 func StringToRoleType(s string) RoleType {
 	if roleType, ok := map[string]RoleType{
-		"Default":  RoleDefault,
-		"Group":    RoleGroup,
-		"Clan": 	RoleClan,
+		"Default": RoleDefault,
+		"Group":   RoleGroup,
+		"Clan":    RoleClan,
 	}[s]; ok {
 		return roleType
 	}
 	return RoleDefault
 }
 
-// UnmarshalJSON for custom Permission type
-func (rt *RoleType) UnmarshalJSON(b []byte) error {
+// UnmarshalYAML for custom Permission type
+func (rt *RoleType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var s string
-	err := json.Unmarshal(b, &s)
+	err := unmarshal(&s)
 	if err != nil {
 		return err
 	}
@@ -98,8 +97,8 @@ type Role struct {
 	Name        string
 	Parent      *Role
 	Permissions []Permission
-	Type		RoleType
-	Description	string
+	Type        RoleType
+	Description string
 }
 
 // Find the index of the permission in the role, returns -1 if not present

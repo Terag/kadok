@@ -8,7 +8,7 @@ image:
 
 # The pullSecrets to use for retrieving Kadok's image
 imagePullSecrets:
-  - name: ""
+  - name: regcred-kadok
 
 # If the registry secret does not yet exist in the cluster, create one
 registrySecret:
@@ -18,12 +18,62 @@ registrySecret:
   username: kubernetes
   password: ""
 
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
 # Kadok specific variables
 kadok:
+
   # The discord token created from https://discord.com/developers/applications.
   # The bot needs it in order to connect to discord APIs and interact with guild members.
-  token: ""
-  configs: "config-staging"
+  token: yourToken
+
+  # Change this part if you wish to change the way kadok behaves
+  # If not set, it will use the default properties file in the container
+  # properties: {}
+  # properties:
+  #   prefix: "kadok"
+  #   guild:
+  #     name: "Les petits pedestres"
+  #   security:
+  #     roles: "config/roles.yaml"
+  #   characters:
+  #     folder: "assets/characters"
+  #   templates: "assets/templates"
+
+  # Kadok Roles. You must define those roles if you want users to be able to interact with the bot.
+  # Kadok relies on the roles set on discord to determine the permissions of a user
+  # If not set, it will use the default roles file in the container. The default roles are the one used in the discord server "les petits pedestres"
+  # roles: {}
+  # roles:
+  #   - name: member
+  #     parent: null
+  #     permissions:
+  #       - CallCharacter
+  #       - GetHelp
+  #       - GetCharacterList
+  #   - name: moderator
+  #     parent: member
+  #     permissions: []
+  #   - name: administrator
+  #     parent: moderator
+  #     permissions: []
+  #   - name: Team Chateau
+  #     parent: member
+  #     permissions: []
+  #     type: Clan
+  #     description: Iels sont fort(e)s, c'est un roc, non c'est des rocs, c'est un chateau
+  #   - name: Aeterniens
+  #     parent: member
+  #     permissions: []
+  #     type: Group
+  #     description: (new-world) Toi aussi pars a la découverte d'un New World
 
 resources:
   limits:

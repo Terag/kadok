@@ -30,13 +30,29 @@ spec:
                   name: token-kadok
                   key: token
           volumeMounts:
-            - name: config
-              mountPath: "go/app/config"
+            {{- if .Values.kadok.properties }}
+            - name: config-properties
+              mountPath: go/app/config/properties.yaml
+              subPath: properties.yaml
               readOnly: true
+            {{- end }}
+            {{- if .Values.kadok.roles }}
+            - name: config-roles
+              mountPath: go/app/config/roles.yaml
+              subPath: roles.yaml
+              readOnly: true
+            {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:
-        - name: config
+        {{- if .Values.kadok.properties }}
+        - name: config-properties
           configMap:
-            name: config-kadok-{{ include "kadok.configMapShortHash" . }}
+            name: {{ include "kadok.fullname" . }}-properties
+        {{- end }}
+        {{- if .Values.kadok.roles }}
+        - name: config-roles
+          configMap:
+            name: {{ include "kadok.fullname" . }}-roles
+        {{- end }}

@@ -65,17 +65,19 @@ app.gitlab.com/app: {{ .Values.gitlab.app }}
 {{- end }}
 
 {{/*
+Create the name of the service account to use
+*/}}
+{{- define "kadok.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "kadok.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create a imagePullSecret value
 */}}
 {{- define "kadok.imagePullSecret" }}
 {{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.registrySecret.registry (printf "%s:%s" .Values.registrySecret.username .Values.registrySecret.password | b64enc) | b64enc }}
-{{- end }}
-
-{{/*
-Get ConfigMap hash to ensure the immutability
-*/}}
-{{- define "kadok.configMapShortHash" }}
-{{- if (.Files.Glob (printf "%s/*" .Values.kadok.configs)) }}
-{{- (.Files.Glob (printf "%s/*" .Values.kadok.configs)).AsConfig | sha256sum | substr 0 12 }}
-{{- end }}
 {{- end }}

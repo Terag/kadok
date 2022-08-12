@@ -1,8 +1,8 @@
-prefix: "devk"
+prefix: "kadok"
 guild:
-  name: "Kadok development team"
+  name: "Les petits pedestres"
 security:
-  roles: "config/roles.json"
+  roles: "config/roles.yaml"
 characters:
   folder: "assets/characters"
 templates: "assets/templates"
