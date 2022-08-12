@@ -6,7 +6,7 @@ import (
 )
 
 func TestLoadRolesTree(t *testing.T) {
-	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.yaml")
 	if err != nil {
 		t.Errorf("Error loading all roles, error: %v", err)
 	}
@@ -19,7 +19,7 @@ func TestLoadRolesTree(t *testing.T) {
 }
 
 func TestRolesTree_IsGranted(t *testing.T) {
-	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.yaml")
 	if err != nil {
 		t.Errorf("Error loading all roles, error: %v", err)
 	}
@@ -30,7 +30,7 @@ func TestRolesTree_IsGranted(t *testing.T) {
 }
 
 func TestRolesTree_GetGroups(t *testing.T) {
-	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.yaml")
 	if err != nil {
 		t.Errorf("Error loading all roles, error: %v", err)
 	}
@@ -52,7 +52,7 @@ func TestRolesTree_GetGroups(t *testing.T) {
 }
 
 func TestRolesTree_GetClans(t *testing.T) {
-	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.yaml")
 	if err != nil {
 		t.Errorf("Error loading all roles, error: %v", err)
 	}
@@ -74,7 +74,7 @@ func TestRolesTree_GetClans(t *testing.T) {
 }
 
 func TestRolesTree_JoinClan(t *testing.T) {
-	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.yaml")
 	if err != nil {
 		t.Errorf("Error loading all roles, error: %v", err)
 	}
@@ -111,7 +111,7 @@ func TestRolesTree_JoinClan(t *testing.T) {
 }
 
 func TestRolesTree_LeaveClan(t *testing.T) {
-	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.yaml")
 	if err != nil {
 		t.Errorf("Error loading all roles, error: %v", err)
 	}
@@ -130,7 +130,7 @@ func TestRolesTree_LeaveClan(t *testing.T) {
 }
 
 func TestRolesTree_JoinGroup(t *testing.T) {
-	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.yaml")
 	if err != nil {
 		t.Errorf("Error loading all roles, error: %v", err)
 	}
@@ -149,7 +149,7 @@ func TestRolesTree_JoinGroup(t *testing.T) {
 }
 
 func TestRolesTree_LeaveGroup(t *testing.T) {
-	rolesTree, err := MakeRolesTreeFromFile("../config/roles.json")
+	rolesTree, err := MakeRolesTreeFromFile("../config/roles.yaml")
 	if err != nil {
 		t.Errorf("Error loading all roles, error: %v", err)
 	}

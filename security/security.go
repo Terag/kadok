@@ -3,12 +3,13 @@
 package security
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Properties information for the Security package.
@@ -60,23 +61,23 @@ func MakeEmptyRolesTree() RolesTree {
 // MakeRolesTreeFromFile returns a RolesTree generated from a file.
 // See Kadok's wiki for more information regarding the file format
 func MakeRolesTreeFromFile(path string) (RolesTree, error) {
-	jsonFile, err := os.Open(path)
+	yamlFile, err := os.Open(path)
 	if err != nil {
 		return MakeEmptyRolesTree(), err
 	}
 
-	byteValue, err := ioutil.ReadAll(jsonFile)
+	byteValue, err := ioutil.ReadAll(yamlFile)
 	if err != nil {
 		return MakeEmptyRolesTree(), err
 	}
 
 	var rolesTree RolesTree
-	err = json.Unmarshal(byteValue, &rolesTree)
+	err = yaml.Unmarshal(byteValue, &rolesTree)
 	if err != nil {
 		return MakeEmptyRolesTree(), err
 	}
 
-	err = jsonFile.Close()
+	err = yamlFile.Close()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -84,35 +85,35 @@ func MakeRolesTreeFromFile(path string) (RolesTree, error) {
 }
 
 // UnmarshalJSON implementation for type RolesTree.
-func (rolesTree *RolesTree) UnmarshalJSON(b []byte) error {
+func (rolesTree *RolesTree) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	// Defined the specific json structure for the context.
-	type jsonRoles struct {
+	type rolesYAML struct {
 		Roles []struct {
-			Name        string				`json:"name"`
-			Parent      string        		`json:"parent"`
-			Permissions []Permission  		`json:"permissions"`
-			Type		RoleType		  	`json:"type"`
-			Description	string				`json:"description"`
-		} `json:"roles"`
+			Name        string       `yaml:"name"`
+			Parent      string       `yaml:"parent"`
+			Permissions []Permission `yaml:"permissions"`
+			Type        RoleType     `yaml:"type"`
+			Description string       `yaml:"description"`
+		} `yaml:"roles"`
 	}
 
 	// Unmarshal it
-	var jRoles jsonRoles
-	err := json.Unmarshal(b, &jRoles)
+	var rolesY rolesYAML
+	err := unmarshal(&rolesY)
 	if err != nil {
 		return err
 	}
 
 	// Populate the context
 	rolesTree.Roles = make(map[string]*Role)
-	for _, jRole := range jRoles.Roles {
+	for _, jRole := range rolesY.Roles {
 		// Roles of type Clan or Group must have an emoji defined and not used by another Role
 		rolesTree.Buffer = append(rolesTree.Buffer, Role{jRole.Name, nil, jRole.Permissions, jRole.Type, jRole.Description})
 		rolesTree.Roles[jRole.Name] = &rolesTree.Buffer[len(rolesTree.Buffer)-1]
 	}
 	// Bind the roles with their parent if present.
-	for _, jRole := range jRoles.Roles {
+	for _, jRole := range rolesY.Roles {
 		if len(jRole.Parent) > 0 {
 			rolesTree.Roles[jRole.Name].Parent = rolesTree.Roles[jRole.Parent]
 		}

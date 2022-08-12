@@ -3,8 +3,6 @@
 # negation (prefixed with !). Only one pattern per line.
 .DS_Store
 # Common VCS dirs
-.git/
-.gitignore
 .bzr/
 .bzrignore
 .hg/
@@ -22,8 +20,11 @@
 *.tmproj
 .vscode/
 .editorconfig
-Makefile
 Procfile
 # Test Coverage
 .testCoverage.txt
 charts/
+# CI/CD
+.github/
+.gitlab-ci.yml
+# Documentation

@@ -61,8 +61,10 @@ func MakeCharactersSliceFromFolder(folder string) ([]Character, error) {
 		fmt.Println("Error loading characters folder")
 		return make([]Character, 0), err
 	}
+	total := len(files)
 
 	characters := make([]Character, 0, len(files))
+	loaded := 0
 	for _, file := range files {
 		filename := filepath.Join(folder, file.Name())
 
@@ -78,7 +80,7 @@ func MakeCharactersSliceFromFolder(folder string) ([]Character, error) {
 				log.Fatal(err)
 			}
 			characters = append(characters, character)
-			fmt.Println(character.Name + " loaded succesfully!")
+			loaded++
 
 			err = jsonFile.Close()
 			if err != nil {
@@ -86,6 +88,8 @@ func MakeCharactersSliceFromFolder(folder string) ([]Character, error) {
 			}
 		}
 	}
+	fmt.Printf("[%d/%d] characters successfully loaded\n", loaded, total)
+
 	return characters, nil
 }
 

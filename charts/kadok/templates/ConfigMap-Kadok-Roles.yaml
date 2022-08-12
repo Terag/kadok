@@ -1,0 +1,9 @@
+{{- if .Values.kadok.roles -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kadok.fullname" . }}-roles
+data:
+  roles.yaml: |
+    {{- toYaml .Values.kadok.roles | nindent 4 }}
+{{- end }}

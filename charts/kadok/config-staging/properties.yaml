@@ -1,8 +1,0 @@
-prefix: "kadok"
-guild:
-  name: "Kadok development team"
-security:
-  roles: "config/roles.json"
-characters:
-  folder: "assets/characters"
-templates: "assets/templates"

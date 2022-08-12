@@ -1,0 +1,9 @@
+{{- if .Values.kadok.properties -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kadok.fullname" . }}-properties
+data:
+  properties.yaml: |
+    {{- toYaml .Values.kadok.properties | nindent 4 }}
+{{- end }}
