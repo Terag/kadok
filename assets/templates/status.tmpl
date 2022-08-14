@@ -1,25 +1,25 @@
-> {{ .Infos.About }}
+> {{ .Info.About }}
 
-**Licensed under:** {{ .Infos.LicenseName }}
-**Full license:** {{ .Infos.LicenseURL }}
-**Contributors:** {{ .Infos.Contributors }}
+**Licensed under:** {{ .Info.LicenseName }}
+**Full license:** {{ .Info.LicenseURL }}
+**Contributors:** {{ .Info.Contributors }}
 
-{{- if .Infos.Version }}
-**Version:** {{ .Infos.Version }}
+{{- if .Info.Version }}
+**Version:** {{ .Info.Version }}
 {{ end }}
 
 {{- if (withParams "plus") }}
 -----------------
 
-{{ if .Infos.GitCommit -}}
-**Build commit:**  {{ .Infos.GitCommit }}
+{{ if .Info.GitCommit -}}
+**Build commit:**  {{ .Info.GitCommit }}
 {{ end }}
 
-{{- if .Infos.BuildDate -}}
-**Build date:** {{ .Infos.BuildDate }}
+{{- if .Info.BuildDate -}}
+**Build date:** {{ .Info.BuildDate }}
 {{ end }}
 
-{{- if .Infos.GoVersion -}}
-**Go:** {{ .Infos.GoVersion }}
+{{- if .Info.GoVersion -}}
+**Go:** {{ .Info.GoVersion }}
 {{ end }}
 {{ end -}}

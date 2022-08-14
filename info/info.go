@@ -1,4 +1,4 @@
-package main
+package info
 
 import "runtime"
 
@@ -22,7 +22,7 @@ var (
 	Contributors = "kadok_team"
 )
 
-type Infos struct {
+type Info struct {
 	About        string
 	LicenseName  string
 	LicenseURL   string
@@ -34,8 +34,8 @@ type Infos struct {
 	Contributors string
 }
 
-func GetInfos() Infos {
-	return Infos{
+func GetInfo() Info {
+	return Info{
 		About,
 		LicenseName,
 		LicenseURL,
