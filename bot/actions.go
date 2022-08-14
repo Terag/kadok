@@ -1,4 +1,4 @@
-package main
+package bot
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Terag/kadok/info"
 	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
 )
@@ -14,7 +15,7 @@ import (
 // TplParams as the standard information passed to an action template
 type TplParams struct {
 	Message       discordgo.Message
-	Infos         Infos
+	Info          info.Info
 	Configuration Properties
 	Parameters    []string
 	Data          map[string]interface{}
@@ -94,7 +95,7 @@ func (a *Action) Execute(s *discordgo.Session, m *discordgo.MessageCreate, param
 	var tpl bytes.Buffer
 	var err = a.GetTemplate(parameters).Execute(&tpl, &TplParams{
 		*m.Message,
-		GetInfos(),
+		info.GetInfo(),
 		Configuration,
 		parameters,
 		a.GetData(s, m, parameters),
@@ -116,7 +117,7 @@ var (
 	// StatusAction for kadok to respond with general information about the itself
 	StatusAction = Action{
 		security.EmptyPermission,
-		"\nJe te dis ce que j'ai dans mon ventre !",
+		"\nJe te dis ce que j'ai dans mon ventre ! `plus` si t'en veux plus !",
 		map[string]*Action{},
 		EmptyData,
 		"status.tmpl",
@@ -266,6 +267,7 @@ var (
 		"Tatan elle fait du flan, elle m'a aussi dit de dire des choses intelligentes si on m'appel: \n" +
 			"> - `kadok aide` je te dis ce que je fais ! Et `kadok <commande> aide` je te donne plus de details !\n" +
 			"> - `kadok aqui` ? Je dis tous mes amis !\n" +
+			"> - `kadok tatan` je te parle de moi !\n" +
 			"> - `kadok groupe <liste|rejoindre|quitter>` Pour voir et rejoindre un groupe ! Tu peux etre dans autant de groupes que tu veux !\n" +
 			"> - `kadok clan <liste|rejoindre|quitter>` Pour voir et rejoindre un clan ! Tu peux avoir seulement un clan !",
 		map[string]*Action{

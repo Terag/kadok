@@ -5,11 +5,9 @@ BUILD_DATE := $(shell date -u)
 # The commit from which the build is run
 GIT_COMMIT := $(shell git rev-list -1 HEAD)
 # List of contributors to the project
-GIT_CONTRIBUTORS := $(shell git shortlog -s  | tr -d '\n[0-9]\t')
-# Version of go used to build the project
-GO_VERSION := $(shell go version)
+GIT_CONTRIBUTORS := $(shell git shortlog -s HEAD | tr -d '\n[0-9]\t' | sed -e 's/^\s\+//g' | sed -e 's/\s\{2,\}/, /g')
 
 .PHONY: build
 
 build:
-	go build -o kadok -ldflags '-X "main.Version=$(BUILD_VERSION)" -X "main.BuildDate=$(BUILD_DATE)" -X "main.GitCommit=$(GIT_COMMIT)" -X "main.Contributors=$(GIT_CONTRIBUTORS)" -X "main.GoVersion=$(GO_VERSION)"'
+	go build -o kadok -ldflags '-X "github.com/Terag/kadok/info.Version=$(BUILD_VERSION)" -X "github.com/Terag/kadok/info.BuildDate=$(BUILD_DATE)" -X "github.com/Terag/kadok/info.GitCommit=$(GIT_COMMIT)" -X "github.com/Terag/kadok/info.Contributors=$(GIT_CONTRIBUTORS)"'

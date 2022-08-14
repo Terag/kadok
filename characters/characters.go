@@ -88,7 +88,7 @@ func MakeCharactersSliceFromFolder(folder string) ([]Character, error) {
 			}
 		}
 	}
-	fmt.Printf("[%d/%d] characters successfully loaded\n", loaded, total)
+	fmt.Printf("Characters successfully loaded [%d/%d]\n", loaded, total)
 
 	return characters, nil
 }

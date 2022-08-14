@@ -1,7 +1,8 @@
-package main
+package bot
 
 import (
 	"errors"
+
 	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
 )
@@ -68,7 +69,7 @@ func GetRoleID(s *discordgo.Session, guildID string, roleName string) (string, e
 			return role.ID, nil
 		}
 	}
-	return "",errors.New("role not found")
+	return "", errors.New("role not found")
 }
 
 func MakeAddRole(s *discordgo.Session, m *discordgo.MessageCreate) security.AddRole {
