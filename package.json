@@ -1,0 +1,15 @@
+{
+    "name": "kadok",
+    "version": "0.1.0",
+    "description": "Kadok is a bot developed for the Discord Guild \"Les petits pedestres\". It aims to provide fun and useful functionnalities for the Guild Members.",
+    "main": "main.go",
+    "repository": "https://gitlab.beyond-undefined.fr/rouquette/kadok",
+    "author": "Victor Rouquette <victor@rouquette.me>",
+    "license": "GPL-3.0",
+    "private": false,
+    "devDependencies": {
+        "@commitlint/cli": "^17.0.3",
+        "@commitlint/config-conventional": "^17.0.3",
+        "npx": "^10.2.2"
+    }
+}
