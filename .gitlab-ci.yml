@@ -1,6 +1,7 @@
 stages:
+  - verify
   - test
-  - delivery
+  - deliver
   - deploy
 
 variables:
@@ -17,6 +18,20 @@ workflow:
         IMAGE_TAG: $CI_COMMIT_SHORT_SHA
         KADOK_ENV: production
     - when: never
+
+verify_commitlint:
+  stage: verify
+  image: node:16.16-alpine3.16
+  before_script:
+    - apk add --no-cache git curl jq
+    - yarn install
+  script:
+    - >
+      curl "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID" --header "Authorization: Bearer $CI_API_TOKEN" -o merge_request.json
+    - echo -e "Commit Message:\n$CI_MERGE_REQUEST_TITLE\n\n$(jq -r '.description' merge_request.json)"
+    - echo -e "$CI_MERGE_REQUEST_TITLE\n\n$(jq -r '.description' merge_request.json)" | npx commitlint --verbose
+  rules:
+  - if: $CI_MERGE_REQUEST_IID
 
 test_code:
   stage: test
@@ -84,8 +99,8 @@ test_chart:
       --set kadok.token=$DISCORD_TOKEN
       charts/kadok
 
-delivery_image:
-  stage: delivery
+deliver_image:
+  stage: deliver
   image:
     name: docker.io/buildah/buildah:latest
   script:
