@@ -3,7 +3,7 @@ package security
 import "testing"
 
 func TestCreateRoleAndPermission(t *testing.T) {
-	member := Role{"member", nil, []Permission{CallCharacter},RoleDefault, ""}
+	member := Role{"member", nil, []Permission{CallCharacter}, RoleDefault, ""}
 	if member.Name != "member" || !member.IsGranted(CallCharacter) {
 		t.Errorf("Error creating role member (%v), got => name: \"%s\" want \"member\", And \"CallCharacter\", IsGranted: %t want true", member, member.Name, member.IsGranted(CallCharacter))
 	}

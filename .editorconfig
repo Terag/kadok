@@ -6,7 +6,11 @@ root = true
 indent_size = 4
 indent_style = space
 
-[{Makefile,go.mod,go.sum,*.go,.gitmodules}]
+[Makefile]
+indent_style = tab
+indent_size = 4
+
+[{go.mod,go.sum,*.go,.gitmodules}]
 indent_style = space
 indent_size = 4
 

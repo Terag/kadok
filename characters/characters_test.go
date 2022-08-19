@@ -1,6 +1,22 @@
 package characters
 
-import "testing"
+import (
+	"testing"
+
+	"gopkg.in/yaml.v3"
+)
+
+func TestCharactersPropertiesUnmarshalYAML(t *testing.T) {
+	propertiesYAML := []byte("folder: \"../assets/characters\"")
+	var properties Properties
+	err := yaml.Unmarshal(propertiesYAML, &properties)
+	if err != nil {
+		t.Errorf("Error loading characters module properties: %v", err)
+	}
+	if len(properties.List) == 0 {
+		t.Errorf("Error, no characters were loaded, got: %v want more", len(properties.List))
+	}
+}
 
 func TestMakeCharactersSliceFromFolder(t *testing.T) {
 	characters, err := MakeCharactersSliceFromFolder("../assets/characters")

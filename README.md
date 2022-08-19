@@ -1,11 +1,10 @@
-[![pipeline status](https://gitlab.beyond-undefined.fr/bots/kadok/badges/main/pipeline.svg)](https://gitlab.beyond-undefined.fr/bots/kadok/-/commits/main)
-[![coverage report](https://gitlab.beyond-undefined.fr/bots/kadok/badges/main/coverage.svg)](https://gitlab.beyond-undefined.fr/bots/kadok/-/commits/main)
+[![Pipeline Status](https://gitlab.beyond-undefined.fr/rouquette/kadok/badges/main/pipeline.svg)](https://gitlab.beyond-undefined.fr/rouquette/kadok/-/commits/main)
+[![Coverage Report](https://gitlab.beyond-undefined.fr/rouquette/kadok/badges/main/coverage.svg)](https://gitlab.beyond-undefined.fr/rouquette/kadok/-/commits/main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Terag/kadok)](https://goreportcard.com/report/github.com/Terag/kadok)
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/Terag/kadok)
-[![Release](https://img.shields.io/github/v/release/Terag/kadok.svg?style=flat-square)](https://github.com/Terag/kadok/releases/latest)
+[![Latest Release](https://gitlab.beyond-undefined.fr/rouquette/kadok/-/badges/release.svg)](https://gitlab.beyond-undefined.fr/rouquette/kadok/-/releases)
 
 # Who is Kadok ?
-
 
 Kadok is a bot developed for the Discord Guild "Les petits pedestres".
 It aims to provide fun and useful functionnalities for the Guild Members.
@@ -50,9 +49,9 @@ For Discord documentation on how to create an application and add it to your Gui
 
 To install the bot locally you can run:
 
-~~~ sh
+``` sh
   go install github.com/Terag/kadok
-~~~
+```
 
 ## Configuration
 
@@ -181,9 +180,9 @@ Example for arthur.json
 
 You can run it by calling it from your shell:
 
-~~~ shell script
+``` shell script
 kadok.exe -t <bot-token> (-p <properties-file>)
-~~~
+```
 
 Available options:
 
