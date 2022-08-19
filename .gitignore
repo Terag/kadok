@@ -347,6 +347,8 @@ docs/.jekyll-cache
 
 # Test Coverage
 .testCoverage.txt
+coverage.*
+junit.xml
 
 #binary
 /kadok

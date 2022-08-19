@@ -37,12 +37,15 @@ func (p Permission) GetPermission() Permission {
 
 // StringToPermission Convert a string to a Permission type
 func StringToPermission(s string) Permission {
-	return map[string]Permission{
+	if p, ok := map[string]Permission{
 		"EmptyPermission":  EmptyPermission,
 		"CallCharacter":    CallCharacter,
 		"GetCharacterList": GetCharacterList,
 		"GetHelp":          GetHelp,
-	}[s]
+	}[s]; ok {
+		return p
+	}
+	return EmptyPermission
 }
 
 // UnmarshalYAML for custom Permission type
