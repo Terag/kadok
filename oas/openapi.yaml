@@ -1,0 +1,22 @@
+openapi: 3.1.0
+info:
+  version: 0.3.0-betat1
+  title: Kadok API
+  contact:
+    url: 'https://gitlab.beyond-undefined.fr/rouquette/kadok/'
+  license:
+    name: GNU GPLv3
+    url: 'https://gitlab.beyond-undefined.fr/rouquette/kadok/-/blob/main/LICENSE'
+  description: |
+    Kadok is a Discord bot firstly developed for the Guild "Les petits pedestres". It aims to provide fun and useful functionalities for the Guild Members.
+externalDocs:
+  description: Kadok project is available on gitlab
+  url: 'https://gitlab.beyond-undefined.fr/rouquette/kadok'
+tags:
+  - name: Well-Known
+    description: Well Known resource and sub resources providing information about Kadok
+paths:
+  '/.well-known':
+    $ref: paths/.well-known.yaml
+  '/.well-known/info':
+    $ref: paths/.well-known@info.yaml

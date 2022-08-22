@@ -1,0 +1,10 @@
+get:
+  operationId: GetWellKnown
+  summary: Get Well-Known
+  description: |
+    The Well-Known resource follows the [RFC8615](https://www.rfc-editor.org/rfc/rfc8615.html) and exposes "site-wide metadata"
+  tags:
+    - Well-Known
+  responses:
+    '200':
+      $ref: ../components/responses/GetWellKnownResponse200.yaml

@@ -10,6 +10,17 @@
     "devDependencies": {
         "@commitlint/cli": "^17.0.3",
         "@commitlint/config-conventional": "^17.0.3",
-        "npx": "^10.2.2"
+        "@redocly/cli": "^1.0.0-beta.107",
+        "@stoplight/spectral-cli": "^6.5.0",
+        "husky": "^8.0.1",
+        "pinst": "^3.0.0"
+    },
+    "scripts": {
+        "lint-oas-redocly": "redocly lint --config oas/.redocly.yaml --format stylish oas/openapi.yaml",
+        "bundle-oas": "redocly bundle --config oas/.redocly.yaml --ext json --output oas/generated/openapi.json oas/openapi.yaml",
+        "lint-oas-spectral": "spectral lint --ruleset oas/.spectral.yaml --format stylish oas/generated/openapi.yaml",
+        "postinstall": "husky install",
+        "prepack": "pinst --disable",
+        "postpack": "pinst --enable"
     }
 }

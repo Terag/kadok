@@ -1,0 +1,159 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "version": "0.3.0-betat1",
+    "title": "Kadok API",
+    "contact": {
+      "url": "https://gitlab.beyond-undefined.fr/rouquette/kadok/"
+    },
+    "license": {
+      "name": "GNU GPLv3",
+      "url": "https://gitlab.beyond-undefined.fr/rouquette/kadok/-/blob/main/LICENSE"
+    },
+    "description": "Kadok is a Discord bot firstly developed for the Guild \"Les petits pedestres\". It aims to provide fun and useful functionalities for the Guild Members.\n"
+  },
+  "externalDocs": {
+    "description": "Kadok project is available on gitlab",
+    "url": "https://gitlab.beyond-undefined.fr/rouquette/kadok"
+  },
+  "tags": [
+    {
+      "name": "Well-Known",
+      "description": "Well Known resource and sub resources providing information about Kadok"
+    }
+  ],
+  "paths": {
+    "/.well-known": {
+      "get": {
+        "operationId": "GetWellKnown",
+        "summary": "Get Well-Known",
+        "description": "The Well-Known resource follows the [RFC8615](https://www.rfc-editor.org/rfc/rfc8615.html) and exposes \"site-wide metadata\"\n",
+        "tags": [
+          "Well-Known"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetWellKnownResponse200"
+          }
+        }
+      }
+    },
+    "/.well-known/info": {
+      "get": {
+        "operationId": "GetWellKnownInfo",
+        "summary": "Get Well-Known Info",
+        "description": "This is a sub-resource of the Well-Known resource. It provides general information regarding Kadok\n",
+        "tags": [
+          "Well-Known"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetWellKnownInfoResponse200"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "GetWellKnownResponse200": {
+        "description": "List of URLs to Well-Known sub-resources\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "info": {
+                  "type": "string",
+                  "description": "Url to the endpoint providing information about the API Provider\n"
+                }
+              }
+            },
+            "examples": {
+              "Basic": {
+                "value": {
+                  "info": "kadok.pedestres.fr/api/.well-known/info"
+                }
+              }
+            }
+          }
+        }
+      },
+      "GetWellKnownInfoResponse200": {
+        "description": "Provides information regarding the provider of the API\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "licenseName": {
+                  "type": "string",
+                  "description": "Name of the license under which Kadok is distributed\n"
+                },
+                "licenseURL": {
+                  "type": "string",
+                  "description": "Url of the license\n"
+                },
+                "version": {
+                  "type": "string",
+                  "description": "Version number of Kadok implementation\n"
+                },
+                "gitCommit": {
+                  "type": "string",
+                  "description": "Useful if you are looking for the source code exposing the API\n"
+                },
+                "buildDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "UTC Date & Time when Kadok was compiled.\nFollows [RFC3339 Section 5.6](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) that itself relies on [ISO8601](https://www.iso.org/iso-8601-date-and-time-format.html)\n"
+                },
+                "goVersion": {
+                  "type": "string",
+                  "description": "Version of go used to build Kadok\n"
+                },
+                "url": {
+                  "type": "string",
+                  "description": "Url to Kadok project\n"
+                },
+                "contributors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "description": "Contributor name as found in git commits\n"
+                      }
+                    }
+                  },
+                  "description": "Kadok contributors information\n"
+                }
+              }
+            },
+            "examples": {
+              "Basic": {
+                "value": {
+                  "licenseName": "GNU General Public License v3.0",
+                  "licenseURL": "https://www.gnu.org/licenses/gpl-3.0-standalone.html",
+                  "version": "v0.1.0-21-gd593d13",
+                  "builCommit": "d593d131d3f185c4da174a719cf71dd10188bb9f",
+                  "buildDate": "2022-04-05T14:30:00Z",
+                  "goVersion": "go1.19",
+                  "url": "https://gitlab.beyond-undefined.fr/rouquette/kadok",
+                  "contributors": [
+                    {
+                      "username": "Paul Jarleton"
+                    },
+                    {
+                      "username": "Victor Rouquette"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

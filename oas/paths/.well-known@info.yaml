@@ -1,0 +1,10 @@
+get:
+  operationId: GetWellKnownInfo
+  summary: Get Well-Known Info
+  description: |
+    This is a sub-resource of the Well-Known resource. It provides general information regarding Kadok
+  tags:
+    - Well-Known
+  responses:
+    '200':
+      $ref: ../components/responses/GetWellKnownInfoResponse200.yaml

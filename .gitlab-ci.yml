@@ -7,6 +7,7 @@ stages:
 variables:
   IMAGE_TAG: "snapshot"
   GOLANG_VERSION: "1.19"
+  ALPINE_VERSION: "3.16"
   NODE_VERSION: "16.16-alpine3.16"
   BUILDAH_VERSION: "latest"
   HELM_VERSION: "latest"
@@ -26,6 +27,8 @@ workflow:
 verify_commitlint:
   stage: verify
   image: node:$NODE_VERSION
+  rules:
+  - if: $CI_MERGE_REQUEST_IID
   before_script:
     - apk add --no-cache git curl jq
     - yarn install
@@ -34,8 +37,22 @@ verify_commitlint:
       curl "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID" --header "Authorization: Bearer $CI_API_TOKEN" -o merge_request.json
     - echo -e "Commit Message:\n$CI_MERGE_REQUEST_TITLE\n\n$(jq -r '.description' merge_request.json)"
     - echo -e "$CI_MERGE_REQUEST_TITLE\n\n$(jq -r '.description' merge_request.json)" | npx commitlint --verbose
+
+verify_openapi:
+  stage: verify
+  image: node:$NODE_VERSION
   rules:
-  - if: $CI_MERGE_REQUEST_IID
+    - changes:
+      - oas/**/*
+  before_script:
+    - apk add --no-cache git
+    - yarn install
+  script:
+    - yarn lint-oas-redocly
+    - sha1sum oas/generated/openapi.json > oas/generated/oas.tmp.sha1
+    - yarn bundle-oas
+    - sha1sum -c oas/generated/oas.tmp.sha1 || (echo "Error, API Contract as oas/generated/openapi.json was not properly regenerated" >& 2 && exit 1)
+    - yarn lint-oas-spectral
 
 test_code:
   stage: test

@@ -1,0 +1,13 @@
+description: |
+  List of URLs to Well-Known sub-resources
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        info:
+          type: string
+          description: |
+            Url to the endpoint providing information about the API Provider
+    examples:
+      $ref: ../examples/responses/GetWellKnownResponse200Examples.yaml

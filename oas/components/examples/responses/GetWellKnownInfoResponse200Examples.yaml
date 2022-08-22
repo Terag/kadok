@@ -1,0 +1,14 @@
+Basic:
+  value:
+    licenseName: "GNU General Public License v3.0"
+    licenseURL: "https://www.gnu.org/licenses/gpl-3.0-standalone.html"
+    version: "v0.1.0-21-gd593d13"
+    builCommit: "d593d131d3f185c4da174a719cf71dd10188bb9f"
+    buildDate: "2022-04-05T14:30:00Z"
+    goVersion: "go1.19"
+    url: "https://gitlab.beyond-undefined.fr/rouquette/kadok"
+    contributors:
+      -
+        username: "Paul Jarleton"
+      -
+        username: "Victor Rouquette"
