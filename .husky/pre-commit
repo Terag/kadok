@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+OAS_CHANGES=$(git diff --cached --name-only --diff-filter=ACM oas/ | wc -l)
+if [ $OAS_CHANGES -gt 0 ]
+then
+    echo "Changes detected in oas/, regenerating oas/generated/openapi.json"
+    yarn lint-oas-redocly
+    yarn bundle-oas
+    yarn lint-oas-spectral
+    git add oas/generated/openapi.json
+    echo "OAS Contract Successfully regenerated at oas/generated/openapi.json"
+else
+    echo "No changes detected in oas/"
+fi

@@ -1,0 +1,50 @@
+description: |
+  Provides information regarding the provider of the API
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        licenseName:
+          type: string
+          description: |
+            Name of the license under which Kadok is distributed
+        licenseURL:
+          type: string
+          description: |
+            Url of the license
+        version:
+          type: string
+          description: |
+            Version number of Kadok implementation
+        gitCommit:
+          type: string
+          description: |
+            Useful if you are looking for the source code exposing the API
+        buildDate:
+          type: string
+          format: date-time
+          description: |
+            UTC Date & Time when Kadok was compiled.
+            Follows [RFC3339 Section 5.6](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) that itself relies on [ISO8601](https://www.iso.org/iso-8601-date-and-time-format.html)
+        goVersion:
+          type: string
+          description: |
+            Version of go used to build Kadok
+        url:
+          type: string
+          description: |
+            Url to Kadok project
+        contributors:
+          type: array
+          items:
+            type: object
+            properties:
+              username:
+                type: string
+                description: |
+                  Contributor name as found in git commits
+          description: |
+            Kadok contributors information
+    examples:
+      $ref: ../examples/responses/GetWellKnownInfoResponse200Examples.yaml

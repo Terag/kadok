@@ -28,3 +28,4 @@ charts/
 .github/
 .gitlab-ci.yml
 # Documentation
+docs/

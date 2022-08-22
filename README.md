@@ -36,6 +36,8 @@ For the developers documentation, please check: https://godoc.org/github.com/Ter
 
 Or run godoc locally to generate the documentation.
 
+Yarn is also required to work with the project as it is used to manage development tools.
+
 # Installation
 
 ## prerequisites
