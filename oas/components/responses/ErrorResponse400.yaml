@@ -1,0 +1,8 @@
+description: |
+  Default 400 error response
+content:
+  application/json:
+    schema:
+      $ref: ../entities/problems/Problem400.yaml
+    examples:
+      $ref: ../examples/responses/ErrorResponse400Examples.yaml

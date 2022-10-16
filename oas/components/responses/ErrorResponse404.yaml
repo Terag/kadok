@@ -1,0 +1,8 @@
+description: |
+  Default 404 error response
+content:
+  application/json:
+    schema:
+      $ref: ../entities/problems/Problem.yaml
+    examples:
+      $ref: ../examples/responses/ErrorResponse404Examples.yaml

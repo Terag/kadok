@@ -8,3 +8,5 @@ get:
   responses:
     '200':
       $ref: ../components/responses/GetWellKnownInfoResponse200.yaml
+    '500':
+      $ref: ../components/responses/ErrorResponse500.yaml

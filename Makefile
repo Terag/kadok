@@ -1,7 +1,7 @@
 # Following go standards, the version of the code is associated to a tag in git
 BUILD_VERSION := $(shell git describe --tags)
 # UTC date when the build was run
-BUILD_DATE := $(shell date -u)
+BUILD_DATE := $(shell date -u -Iseconds)
 # The commit from which the build is run
 GIT_COMMIT := $(shell git rev-list -1 HEAD)
 # List of contributors to the project

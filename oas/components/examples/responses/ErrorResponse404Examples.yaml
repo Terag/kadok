@@ -1,0 +1,6 @@
+Default:
+  value:
+    type: "about:blank"
+    title: "Not found"
+    detail: "The requested resource was not found"
+    status: "404"

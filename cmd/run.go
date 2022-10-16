@@ -1,17 +1,24 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/Terag/kadok/api"
 	"github.com/Terag/kadok/bot"
 	"github.com/spf13/cobra"
 )
 
 var (
-	token      string
-	properties string
+	token         string
+	properties    string
+	apiProperties api.Properties
 )
 
 // runCmd represents the run command used to start Kadok bot
@@ -130,7 +137,28 @@ roles:
       - templates:        string  path to the folder containing Kadok templates. See the current available templates.
         (REQUIRED)                Then must be all present for Kadok to work properly.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		bot.Run(token, properties)
+
+		cancelOnError := func(e error) {
+			log.Fatal(e)
+		}
+
+		waitEndSignal := func() {
+			sc := make(chan os.Signal, 1)
+			signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+			<-sc
+			fmt.Println("Received closing signal")
+		}
+
+		launchApi := func() {
+			// enable api feature flag
+			if apiProperties.Enable {
+				api.Run(waitEndSignal, cancelOnError, apiProperties)
+			} else {
+				waitEndSignal()
+			}
+		}
+
+		bot.Run(launchApi, cancelOnError, token, properties)
 	},
 }
 
@@ -141,4 +169,9 @@ func init() {
 	runCmd.Flags().StringVarP(&token, "token", "t", "", "Bot's token to connect to discord")
 	runCmd.MarkFlagRequired("token")
 	runCmd.Flags().StringVarP(&properties, "properties", "p", "config/properties.yaml", "Path to the properties file")
+	runCmd.Flags().BoolVar(&apiProperties.Enable, "enable-api", true, "Feature gate: false if you don't want kadok to expose its api")
+	runCmd.Flags().StringVar(&apiProperties.ListeningInterface, "api-listening-interface", "0.0.0.0", "Network interface on which Kadok API will listen to")
+	runCmd.Flags().IntVar(&apiProperties.HttpPort, "api-http-port", 8080, "Port on which Kadok API should listen to")
+	runCmd.Flags().StringVar(&apiProperties.Hostname, "api-hostname", "localhost", "Hostname under which Kadok API is exposed")
+	runCmd.Flags().StringVar(&apiProperties.BasePath, "api-basepath", "api", "Base path used as prefix for every Kadok API resource")
 }

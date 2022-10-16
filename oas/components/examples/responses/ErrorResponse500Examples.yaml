@@ -1,0 +1,6 @@
+Default:
+  value:
+    type: "about:blank"
+    title: "Internal Error"
+    detail: "Oups, something went wrong! Please try later"
+    status: "500"

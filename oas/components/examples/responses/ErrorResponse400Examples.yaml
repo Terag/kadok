@@ -1,0 +1,9 @@
+Default:
+  value:
+    type: "about:blank"
+    title: "Base Request"
+    detail: "Invalid parameter(s)"
+    status: 400
+    invalidParameters:
+      - name: "username"
+        reason: "parameter is missing"

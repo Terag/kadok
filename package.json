@@ -16,9 +16,13 @@
         "pinst": "^3.0.0"
     },
     "scripts": {
-        "lint-oas-redocly": "redocly lint --config oas/.redocly.yaml --format stylish oas/openapi.yaml",
-        "bundle-oas": "redocly bundle --config oas/.redocly.yaml --ext json --output oas/generated/openapi.json oas/openapi.yaml",
-        "lint-oas-spectral": "spectral lint --ruleset oas/.spectral.yaml --format stylish oas/generated/openapi.yaml",
+        "oas:dev:watch": "redocly preview-docs --config .redocly.yaml oas/openapi.yaml",
+        "oas:lint:redocly": "redocly lint --config .redocly.yaml --format stylish oas/openapi.yaml",
+        "oas:lint:spectral": "spectral lint --ruleset .spectral.yaml --format stylish oas/generated/openapi.yaml",
+        "oas:bundle": "redocly bundle --config .redocly.yaml --ext json --output oas/generated/openapi.json oas/openapi.yaml",
+        "oas:render": "redoc-cli build --disableGoogleFont -o oas/generated/openapi.html oas/generated/openapi.json",
+        "oas:codegen:types": "oapi-codegen --config api-codegen.types.yaml oas/generated/openapi.json",
+        "oas:codegen:server": "oapi-codegen --config api-codegen.server.yaml oas/generated/openapi.json",
         "postinstall": "husky install",
         "prepack": "pinst --disable",
         "postpack": "pinst --enable"
