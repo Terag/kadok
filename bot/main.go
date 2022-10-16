@@ -4,12 +4,9 @@
 package bot
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/Terag/kadok/characters"
 	"github.com/Terag/kadok/security"
@@ -44,16 +41,20 @@ var (
 )
 
 // Run starts the bot. and call for registering the handlers.
-func Run(token string, configPath string) {
+// In case of error when launching the server, `onError` is called
+// Once the server is launched, call onReady and wait on its return to close the server.
+func Run(onReady func(), onError func(error), token string, configPath string) {
 
 	configFile, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		log.Fatal("yamlFile.Get err: ", err)
+		onError(errors.New("Kadok bot error: " + err.Error()))
+		return
 	}
 
 	err = yaml.Unmarshal(configFile, &Configuration)
 	if err != nil {
-		log.Fatal(err)
+		onError(errors.New("Kadok bot error: " + err.Error()))
+		return
 	}
 	numberRoles := len(Configuration.Security.RolesHierarchy.Buffer)
 	numberClans := len(Configuration.Security.RolesHierarchy.GetClans())
@@ -63,7 +64,7 @@ func Run(token string, configPath string) {
 	// Create a new Discord session using the provided bot token.
 	dg, err := discordgo.New("Bot " + token)
 	if err != nil {
-		fmt.Println("error creating Discord session: ", err)
+		onError(errors.New("Kadok bot error: " + err.Error()))
 		return
 	}
 
@@ -76,7 +77,7 @@ func Run(token string, configPath string) {
 	// Open a websocket connection to Discord and begin listening.
 	err = dg.Open()
 	if err != nil {
-		fmt.Println("error opening connection: ", err)
+		onError(errors.New("Kadok bot error: " + err.Error()))
 		return
 	}
 
@@ -93,7 +94,8 @@ func Run(token string, configPath string) {
 	for _, guild := range guilds {
 		guild, err = dg.Guild(guild.ID)
 		if err != nil {
-			log.Fatal(err)
+			onError(errors.New("Kadok bot error: " + err.Error()))
+			return
 		}
 		if guild.Name == Configuration.Guild.Name {
 			Configuration.Guild.ID = guild.ID
@@ -103,20 +105,15 @@ func Run(token string, configPath string) {
 	if Configuration.Guild.ID == "" {
 		application, err := dg.Application("@me")
 		if err != nil {
-			log.Fatal(err)
+			onError(errors.New("Kadok bot error: " + err.Error()))
+			return
 		}
-		log.Fatal("Configured guild not found. The bot must be invited in the right guild using the following link: https://discord.com/api/oauth2/authorize?client_id=" + application.ID + "&scope=bot&permissions=8")
+		fmt.Println("Configured guild not found. The bot must be invited in the right guild using the following link: https://discord.com/api/oauth2/authorize?client_id=" + application.ID + "&scope=bot&permissions=8")
+		onError(errors.New("Kadok bot error: Configured guild not found. The bot must be invited in the right guild using the following link: https://discord.com/api/oauth2/authorize?client_id=" + application.ID + "&scope=bot&permissions=8"))
+		return
 	}
 
 	fmt.Println("Bot is now running on the Guild [" + Configuration.Guild.Name + "] and can be called with the Prefix [" + Configuration.Prefix + "].")
-	fmt.Println("Press CTRL-C to exit.")
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
-	<-sc
 
-	// Cleanly close down the Discord session.
-	err = dg.Close()
-	if err != nil {
-		fmt.Println(err)
-	}
+	onReady()
 }

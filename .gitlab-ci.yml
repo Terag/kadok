@@ -48,11 +48,11 @@ verify_openapi:
     - apk add --no-cache git
     - yarn install
   script:
-    - yarn lint-oas-redocly
+    - yarn oas:lint:redocly
+    - yarn oas:lint:spectral
     - sha1sum oas/generated/openapi.json > oas/generated/oas.tmp.sha1
-    - yarn bundle-oas
+    - yarn oas:bundle
     - sha1sum -c oas/generated/oas.tmp.sha1 || (echo "Error, API Contract as oas/generated/openapi.json was not properly regenerated" >& 2 && exit 1)
-    - yarn lint-oas-spectral
 
 test_code:
   stage: test

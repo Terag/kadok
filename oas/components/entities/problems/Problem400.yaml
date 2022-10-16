@@ -1,0 +1,8 @@
+type: object
+allOf:
+  - $ref: "./Problem.yaml"
+properties:
+  invalidParameters:
+    type: array
+    items:
+      $ref: ./InvalidParameter.yaml

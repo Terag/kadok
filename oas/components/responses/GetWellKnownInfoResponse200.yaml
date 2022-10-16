@@ -38,12 +38,7 @@ content:
         contributors:
           type: array
           items:
-            type: object
-            properties:
-              username:
-                type: string
-                description: |
-                  Contributor name as found in git commits
+            $ref: ../entities/InfoContributor.yaml
           description: |
             Kadok contributors information
     examples:

@@ -1,0 +1,7 @@
+package: api
+generate:
+  echo-server: true
+  embedded-spec: true
+output-options:
+  skip-prune: false
+output: api/server.go
