@@ -1,4 +1,4 @@
-module github.com/Terag/kadok
+module github.com/terag/kadok
 
 go 1.19
 

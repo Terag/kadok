@@ -4,4 +4,4 @@ generate:
   embedded-spec: true
 output-options:
   skip-prune: false
-output: api/server.go
+output: internal/api/server.go

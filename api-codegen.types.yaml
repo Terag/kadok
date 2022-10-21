@@ -3,4 +3,4 @@ generate:
   models: true
 output-options:
   skip-prune: false
-output: api/types.go
+output: internal/api/types.go

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Terag/kadok/info"
-	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
+	"github.com/terag/kadok/internal/info"
+	"github.com/terag/kadok/pkg/security"
 )
 
 // TplParams as the standard information passed to an action template

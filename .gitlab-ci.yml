@@ -43,16 +43,16 @@ verify_openapi:
   image: node:$NODE_VERSION
   rules:
     - changes:
-      - oas/**/*
+      - api/**/*
   before_script:
     - apk add --no-cache git
     - yarn install
   script:
     - yarn oas:lint:redocly
     - yarn oas:lint:spectral
-    - sha1sum oas/generated/openapi.json > oas/generated/oas.tmp.sha1
+    - sha1sum api/generated/openapi.json > api/generated/oas.tmp.sha1
     - yarn oas:bundle
-    - sha1sum -c oas/generated/oas.tmp.sha1 || (echo "Error, API Contract as oas/generated/openapi.json was not properly regenerated" >& 2 && exit 1)
+    - sha1sum -c api/generated/oas.tmp.sha1 || (echo "Error, API Contract as api/generated/openapi.json was not properly regenerated" >& 2 && exit 1)
 
 test_code:
   stage: test
@@ -66,23 +66,7 @@ test_code:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
     - if: '$CI_COMMIT_TAG'
   script:
-    - go install github.com/t-yuki/gocover-cobertura@latest
-    - go install github.com/jstemmer/go-junit-report@latest
-    - go install github.com/kyoh86/richgo@latest
-    - >
-      go test -v -cover -covermode="count"
-      -coverprofile=coverage.txt ./... |
-      bash -c 'tee >(RICHGO_FORCE_COLOR=1 richgo testfilter > /dev/stderr)' |
-      go-junit-report -set-exit-code > junit.xml
-    - go tool cover -html=coverage.txt -o coverage.html
-    - gocover-cobertura < coverage.txt > coverage.xml
-    - go tool cover -html coverage.txt -o coverage.html
-    # The following line are required for gitlab to detect the covreage based on its regex match.
-    # The regex being evaluated by gitlab is: coverage: \d+.\d+% of statements
-    - >
-      COVERAGE=$(go tool cover -func coverage.txt | grep total: | sed -e "s/\t//g" | sed -n -E 's/^.*\)([0-9]+\.[0-9]+)%$/\1/p')
-    - >
-      echo "coverage: $(printf '%.1f' "${COVERAGE}")% of statements"
+    - scripts/test.sh
   coverage: /^coverage:\s(\d+(?:\.\d+)?%)/
   artifacts:
     when: always

@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/Terag/kadok/characters"
-	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
+	"github.com/terag/kadok/pkg/characters"
+	"github.com/terag/kadok/pkg/security"
 	"gopkg.in/yaml.v3"
 )
 

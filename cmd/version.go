@@ -1,14 +1,13 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
 	"fmt"
 
-	"github.com/Terag/kadok/info"
 	"github.com/spf13/cobra"
+	"github.com/terag/kadok/internal/info"
 )
 
 // versionCmd represents the version command used to retrieve kadok version information

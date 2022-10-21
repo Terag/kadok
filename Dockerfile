@@ -15,5 +15,5 @@ ENV TOKEN=
 WORKDIR /go/app
 COPY --from=builder /go/app/src/kadok /go/app/kadok
 COPY ./assets ./assets
-COPY ./config ./config
+COPY ./configs ./configs
 ENTRYPOINT /go/app/kadok run -t $TOKEN

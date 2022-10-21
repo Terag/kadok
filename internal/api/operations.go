@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Terag/kadok/info"
 	"github.com/labstack/echo/v4"
+	"github.com/terag/kadok/internal/info"
 )
 
 // Get Well-Known
