@@ -19,7 +19,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Terag/kadok/cmd"
+	"github.com/terag/kadok/cmd"
 )
 
 func main() {

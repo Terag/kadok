@@ -25,12 +25,15 @@ type Properties struct {
 func Run(onReady func(), onError func(error), p Properties) {
 
 	e := echo.New()
-	// Cleanly close down the API
+	// Gracefully close down the API Server
 	defer func() {
-		if err := e.Close(); err != nil {
-			fmt.Println("Kadok API error: ", err)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := e.Shutdown(ctx); err != nil {
+			e.Logger.Fatal(err)
 		}
 	}()
+
 	kas := KadokApiServer{
 		Hostname: p.Hostname,
 		BasePath: p.BasePath,
@@ -51,14 +54,6 @@ func Run(onReady func(), onError func(error), p Properties) {
 		if err := e.StartServer(&s); err != nil {
 			onError(errors.New("Kadok API error: " + err.Error()))
 			return
-		}
-	}()
-
-	defer func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		if err := e.Shutdown(ctx); err != nil {
-			e.Logger.Fatal(err)
 		}
 	}()
 

@@ -7,10 +7,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Terag/kadok/info"
-	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
+	"github.com/terag/kadok/internal/info"
+	"github.com/terag/kadok/pkg/security"
 )
+
+const templatesFolderPath = "../assets/templates"
 
 func TestResolveAndActionStatus(t *testing.T) {
 	action, _ := ResolveAction(&RootAction, []string{"tatan"})
@@ -68,7 +70,7 @@ func TestExecuteActionStatus(t *testing.T) {
 		log.Fatal("Error moving the current working directory")
 	}
 
-	Configuration.Templates = path.Join(path.Dir(packageDir), "assets/templates")
+	Configuration.Templates = path.Join(path.Dir(packageDir), templatesFolderPath)
 	statusFirstLine := "> " + info.GetInfo().About
 	var message discordgo.MessageCreate = discordgo.MessageCreate{
 		Message: &discordgo.Message{},

@@ -23,9 +23,12 @@
 Procfile
 # Test Coverage
 .testCoverage.txt
+# Helm Charts
 charts/
 # CI/CD
 .github/
 .gitlab-ci.yml
 # Documentation
 docs/
+# yarn
+node_modules/

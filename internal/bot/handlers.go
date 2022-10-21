@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Terag/kadok/characters"
-	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
+	"github.com/terag/kadok/pkg/characters"
+	"github.com/terag/kadok/pkg/security"
 )
 
 // registerHandlers add the event handlers used by Kadok to interact with Discord

@@ -3,8 +3,8 @@ package bot
 import (
 	"errors"
 
-	"github.com/Terag/kadok/security"
 	"github.com/bwmarrin/discordgo"
+	"github.com/terag/kadok/pkg/security"
 )
 
 // GetUserRoles retrieves the list of roles names of the User who sent the message.

@@ -6,8 +6,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const charactersFolderPath = "../../assets/characters"
+
 func TestCharactersPropertiesUnmarshalYAML(t *testing.T) {
-	propertiesYAML := []byte("folder: \"../assets/characters\"")
+	propertiesYAML := []byte("folder: \"" + charactersFolderPath + "\"")
 	var properties Properties
 	err := yaml.Unmarshal(propertiesYAML, &properties)
 	if err != nil {
@@ -19,7 +21,7 @@ func TestCharactersPropertiesUnmarshalYAML(t *testing.T) {
 }
 
 func TestMakeCharactersSliceFromFolder(t *testing.T) {
-	characters, err := MakeCharactersSliceFromFolder("../assets/characters")
+	characters, err := MakeCharactersSliceFromFolder(charactersFolderPath)
 	if err != nil {
 		t.Errorf("Error loading characters from folder, error: %v", err)
 	}
@@ -29,7 +31,7 @@ func TestMakeCharactersSliceFromFolder(t *testing.T) {
 }
 
 func TestGetQuoteFromMessage(t *testing.T) {
-	characters, err := MakeCharactersSliceFromFolder("../assets/characters")
+	characters, err := MakeCharactersSliceFromFolder(charactersFolderPath)
 	_, err = GetQuoteFromMessage(characters, "Bonjour monsieur arthur")
 	if err != nil {
 		t.Errorf("Error finding a quote from message, error: %v", err)

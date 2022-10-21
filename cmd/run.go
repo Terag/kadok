@@ -10,9 +10,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Terag/kadok/api"
-	"github.com/Terag/kadok/bot"
 	"github.com/spf13/cobra"
+	"github.com/terag/kadok/internal/api"
+	"github.com/terag/kadok/internal/bot"
 )
 
 var (
@@ -145,6 +145,7 @@ roles:
 		waitEndSignal := func() {
 			sc := make(chan os.Signal, 1)
 			signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+			fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 			<-sc
 			fmt.Println("Received closing signal")
 		}
@@ -168,7 +169,7 @@ func init() {
 
 	runCmd.Flags().StringVarP(&token, "token", "t", "", "Bot's token to connect to discord")
 	runCmd.MarkFlagRequired("token")
-	runCmd.Flags().StringVarP(&properties, "properties", "p", "config/properties.yaml", "Path to the properties file")
+	runCmd.Flags().StringVarP(&properties, "properties", "p", "configs/properties.yaml", "Path to the properties file")
 	runCmd.Flags().BoolVar(&apiProperties.Enable, "enable-api", true, "Feature gate: false if you don't want kadok to expose its api")
 	runCmd.Flags().StringVar(&apiProperties.ListeningInterface, "api-listening-interface", "0.0.0.0", "Network interface on which Kadok API will listen to")
 	runCmd.Flags().IntVar(&apiProperties.HttpPort, "api-http-port", 8080, "Port on which Kadok API should listen to")
