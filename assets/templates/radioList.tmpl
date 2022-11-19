@@ -1,0 +1,12 @@
+{{- if .Data.Error -}}
+> {{ .Data.Username }}: oups ! {{ .Data.Error.Error }}
+{{- else -}}
+> C'est l'heure d'écouter la radio?
+> Y a pleins de stations! `Page {{ .Data.CurrentPage }} sur {{ .Data.NbPage }}`
+{{- range $id, $station := .Data.Stations }}
+> - **{{ $station.Id }}**: {{ if $station.Name}} - {{$station.Summary}}
+{{- end -}}
+{{- else -}}
+> Oups, pas de stations de trouvées !
+{{- end -}}
+{{- end -}}

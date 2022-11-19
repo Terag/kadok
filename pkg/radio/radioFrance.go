@@ -16,6 +16,10 @@ type RadioFrance struct {
 	ApiKey string
 }
 
+func (rf RadioFrance) GetName() string {
+	return "Radio France"
+}
+
 func (rf *RadioFrance) GetStations() ([]Station, error) {
 	dto, err := rf.GetRadioFranceBrands()
 	if err != nil {
@@ -24,8 +28,17 @@ func (rf *RadioFrance) GetStations() ([]Station, error) {
 	return dto.GetStations(), nil
 }
 
-func (rf RadioFrance) GetName() string {
-	return "Radio France"
+func (rf *RadioFrance) GetStation(id string) (Station, error) {
+	stations, err := rf.GetStations()
+	if err != nil {
+		return Station{}, err
+	}
+	for _, s := range stations {
+		if s.Id == id {
+			return s, nil
+		}
+	}
+	return Station{}, errors.New("Station not found")
 }
 
 func (rf *RadioFrance) GetRadioFranceBrands() (RadioFranceDto, error) {
@@ -118,43 +131,53 @@ type RadioFranceDto struct {
 func (rfd RadioFranceDto) GetStations() []Station {
 	var stations []Station
 	for _, s := range rfd.Data.Brands {
-		streamUrl, err := url.Parse(s.LiveStream)
-		if err != nil {
-			fmt.Printf("Error parse Stream Url for Radio France %v: %v\n", s.Id, err)
-		} else {
-			stations = append(stations, Station{
-				Id:          s.Id,
-				Name:        s.Title,
-				Type:        LiveStation,
-				Summary:     s.Baseline,
-				Description: s.Description,
-				StreamUrl:   *streamUrl,
-			})
-		}
-		for _, ws := range s.WebRadios {
+		if s.LiveStream != "" {
+			streamUrl, err := url.Parse(s.LiveStream)
 			if err != nil {
-				fmt.Printf("Error parse Stream Url for Radio France %v: %v\n", ws.Id, err)
+				fmt.Printf("Error parse Stream Url for Radio France %v: %v\n", s.Id, err)
 			} else {
 				stations = append(stations, Station{
-					Id:          ws.Id,
-					Name:        ws.Title,
+					Id:          s.Id,
+					Name:        s.Title,
 					Type:        LiveStation,
-					Summary:     ws.Description,
-					Description: ws.Description,
+					Summary:     s.Baseline,
+					Description: s.Description,
+					StreamUrl:   streamUrl,
 				})
 			}
 		}
+		for _, ws := range s.WebRadios {
+			if ws.LiveStream != "" {
+				wsStreamUrl, err := url.Parse(ws.LiveStream)
+				if err != nil {
+					fmt.Printf("Error parse Stream Url for Radio France %v: %v\n", ws.Id, err)
+				} else {
+					stations = append(stations, Station{
+						Id:          ws.Id,
+						Name:        ws.Title,
+						Type:        LiveStation,
+						Summary:     ws.Description,
+						Description: ws.Description,
+						StreamUrl:   wsStreamUrl,
+					})
+				}
+			}
+		}
 		for _, ls := range s.LocalRadios {
-			if err != nil {
-				fmt.Printf("Error parse Stream Url for Radio France %v: %v\n", ls.Id, err)
-			} else {
-				stations = append(stations, Station{
-					Id:          ls.Id,
-					Name:        ls.Title,
-					Type:        LiveStation,
-					Summary:     ls.Description,
-					Description: ls.Description,
-				})
+			if ls.LiveStream != "" {
+				lsStreamUrl, err := url.Parse(ls.LiveStream)
+				if err != nil {
+					fmt.Printf("Error parse Stream Url for Radio France %v: %v\n", ls.Id, err)
+				} else {
+					stations = append(stations, Station{
+						Id:          ls.Id,
+						Name:        ls.Title,
+						Type:        LiveStation,
+						Summary:     ls.Description,
+						Description: ls.Description,
+						StreamUrl:   lsStreamUrl,
+					})
+				}
 			}
 		}
 	}

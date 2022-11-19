@@ -18,7 +18,8 @@ const (
 
 type Radio interface {
 	GetName() string
-	GetStations() []Station
+	GetStations() ([]Station, error)
+	GetStation(id string) (Station, error)
 }
 
 type Station struct {
@@ -27,5 +28,5 @@ type Station struct {
 	Type        StationType
 	Summary     string
 	Description string
-	StreamUrl   url.URL
+	StreamUrl   *url.URL
 }
