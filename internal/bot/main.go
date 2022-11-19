@@ -7,9 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/terag/kadok/internal/cache"
+	"github.com/terag/kadok/internal/http"
 	"github.com/terag/kadok/pkg/characters"
+	"github.com/terag/kadok/pkg/radio"
 	"github.com/terag/kadok/pkg/security"
 	"gopkg.in/yaml.v3"
 )
@@ -28,6 +32,7 @@ type Properties struct {
 	Guild      Guild                 `yaml:"guild"`
 	Characters characters.Properties `yaml:"characters"`
 	Security   security.Properties   `yaml:"security"`
+	Radio      radio.Properties      `yaml:"radio"`
 	Templates  string                `yaml:"templates"`
 }
 
@@ -45,6 +50,8 @@ var (
 // Once the server is launched, call onReady and wait on its return to close the server.
 func Run(onReady func(), onError func(error), token string, configPath string) {
 
+	client := http.NewHttpClient(cache.NewMemoryCache(time.Duration(60*time.Second)), time.Duration(30*time.Second))
+
 	configFile, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		onError(errors.New("Kadok bot error: " + err.Error()))
@@ -56,6 +63,7 @@ func Run(onReady func(), onError func(error), token string, configPath string) {
 		onError(errors.New("Kadok bot error: " + err.Error()))
 		return
 	}
+	Configuration.Radio.France.Client = &client
 	numberRoles := len(Configuration.Security.RolesHierarchy.Buffer)
 	numberClans := len(Configuration.Security.RolesHierarchy.GetClans())
 	numberGroups := len(Configuration.Security.RolesHierarchy.GetGroups())

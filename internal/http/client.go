@@ -40,6 +40,15 @@ type HttpClient struct {
 	Cache  cache.Cache
 }
 
+func NewHttpClient(cache cache.Cache, timeout time.Duration) HttpClient {
+	return HttpClient{
+		Cache: cache,
+		Client: http.Client{
+			Timeout: timeout,
+		},
+	}
+}
+
 func (hc *HttpClient) Execute(request Request) (Response, error) {
 	if request.CacheKey != "" && hc.Cache != nil {
 		if v, ok, _ := hc.Cache.Get(request.CacheKey); ok {

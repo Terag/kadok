@@ -9,6 +9,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/terag/kadok/internal/info"
+	"github.com/terag/kadok/internal/utils"
 	"github.com/terag/kadok/pkg/security"
 )
 
@@ -261,6 +262,59 @@ var (
 		"clanLeave.tmpl",
 	}
 
+	RadioRootAction = Action{
+		security.EmptyPermission,
+		"Toutes les radios que tu peux écouter !\n" +
+			"> `kadok radio liste <pageIndex>`\n" +
+			"> `kadok radio info <radioId>`\n",
+		map[string]*Action{
+			"LISTE": &RadioListAction,
+			"INFO":  &RadioInfoAction,
+		},
+		EmptyData,
+		"404.tmpl",
+	}
+
+	RadioListAction = Action{
+		security.EmptyPermission,
+		"La liste des radios disponibles !",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			stations, err := Configuration.Radio.GetStations()
+			if err != nil {
+				return map[string]interface{}{
+					"Error": err,
+				}
+			}
+			requestedPage := strings.Join(parameters, " ")
+			nbPage, currentPage, indexStart, indexEnd := utils.CalculatePagination(len(stations), 10, requestedPage)
+			return map[string]interface{}{
+				"Username":    m.Author.Username,
+				"NbPage":      nbPage,
+				"CurrentPage": currentPage,
+				"Stations":    stations[indexStart:indexEnd],
+				"Error":       err,
+			}
+		},
+		"radioList.tmpl",
+	}
+
+	RadioInfoAction = Action{
+		security.EmptyPermission,
+		"Info d'une radio en particulier !",
+		map[string]*Action{},
+		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			stationId := strings.Join(parameters, " ")
+			station, err := Configuration.Radio.GetStation(stationId)
+			return map[string]interface{}{
+				"Username": m.Author.Username,
+				"Station":  station,
+				"Error":    err,
+			}
+		},
+		"radioInfo.tmpl",
+	}
+
 	// RootAction is the first action call by Kadok for resolve
 	RootAction = Action{
 		security.GetHelp,
@@ -269,12 +323,14 @@ var (
 			"> - `kadok aqui` ? Je dis tous mes amis !\n" +
 			"> - `kadok tatan` je te parle de moi !\n" +
 			"> - `kadok groupe <liste|rejoindre|quitter>` Pour voir et rejoindre un groupe ! Tu peux etre dans autant de groupes que tu veux !\n" +
-			"> - `kadok clan <liste|rejoindre|quitter>` Pour voir et rejoindre un clan ! Tu peux avoir seulement un clan !",
+			"> - `kadok clan <liste|rejoindre|quitter>` Pour voir et rejoindre un clan ! Tu peux avoir seulement un clan !\n" +
+			"> - `kadok radio <liste|info>` Pour voir toutes les radios à écouter !",
 		map[string]*Action{
 			"AQUI":   &GetCharactersAction,
 			"TATAN":  &StatusAction,
 			"GROUPE": &GroupRootAction,
 			"CLAN":   &ClanRootAction,
+			"RADIO":  &RadioRootAction,
 		},
 		EmptyData,
 		"404.tmpl",

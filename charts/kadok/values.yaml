@@ -36,7 +36,7 @@ kadok:
 
   # Change this part if you wish to change the way kadok behaves
   # If not set, it will use the default properties file in the container
-  # properties: {}
+  properties: {}
   # properties:
   #   prefix: "kadok"
   #   guild:
@@ -50,7 +50,7 @@ kadok:
   # Kadok Roles. You must define those roles if you want users to be able to interact with the bot.
   # Kadok relies on the roles set on discord to determine the permissions of a user
   # If not set, it will use the default roles file in the container. The default roles are the one used in the discord server "les petits pedestres"
-  # roles: {}
+  roles: {}
   # roles:
   #   - name: member
   #     parent: null
