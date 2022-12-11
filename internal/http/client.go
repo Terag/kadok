@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -40,8 +41,8 @@ type HttpClient struct {
 	Cache  cache.Cache
 }
 
-func NewHttpClient(cache cache.Cache, timeout time.Duration) HttpClient {
-	return HttpClient{
+func NewHttpClient(cache cache.Cache, timeout time.Duration) *HttpClient {
+	return &HttpClient{
 		Cache: cache,
 		Client: http.Client{
 			Timeout: timeout,
@@ -52,6 +53,7 @@ func NewHttpClient(cache cache.Cache, timeout time.Duration) HttpClient {
 func (hc *HttpClient) Execute(request Request) (Response, error) {
 	if request.CacheKey != "" && hc.Cache != nil {
 		if v, ok, _ := hc.Cache.Get(request.CacheKey); ok {
+			fmt.Println("HTTP Execute - Cache Hit for Key: ", request.CacheKey)
 			return Response{
 				StatusCode: http.StatusOK,
 				CacheHit:   true,
@@ -70,6 +72,7 @@ func (hc *HttpClient) Execute(request Request) (Response, error) {
 		}
 	}
 
+	fmt.Println("HTTP Execute - Request: ", request.Method, " ", request.Url)
 	httpResponse, err := hc.Client.Do(httpRequest)
 	if err != nil {
 		return Response{}, err
@@ -78,6 +81,7 @@ func (hc *HttpClient) Execute(request Request) (Response, error) {
 	responseBody, err := ioutil.ReadAll(httpResponse.Body)
 
 	if httpResponse.StatusCode > 499 {
+		fmt.Println("HTTP Execute - Response Error: ", httpResponse.Status, " - ", string(responseBody))
 		return Response{}, HttpError{
 			StatusCode: httpResponse.StatusCode,
 			Url:        request.Url,
@@ -85,8 +89,10 @@ func (hc *HttpClient) Execute(request Request) (Response, error) {
 		}
 	}
 
+	fmt.Println("HTTP Execute - Response: ", httpResponse.Status)
 	if httpResponse.StatusCode == 200 && request.CacheKey != "" && hc.Cache != nil {
-		hc.Cache.Put(request.CacheKey, responseBody, time.Duration(5*time.Minute))
+		fmt.Println("HTTP Execute - Caching: at ", request.CacheKey, " for ", request.CacheDuration)
+		hc.Cache.Put(request.CacheKey, responseBody, request.CacheDuration)
 	}
 
 	var headers []Header

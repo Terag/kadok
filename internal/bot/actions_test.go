@@ -42,7 +42,7 @@ func TestResolveActionStatusHelp(t *testing.T) {
 	if action != &StatusAction {
 		t.Errorf("Tried to resolve status action, different action was found")
 	}
-	information, _ := execute(nil, nil)
+	information, _ := execute(nil, nil, nil)
 	if information != StatusAction.Information {
 		t.Errorf("Did not retrieve the expected information about the action")
 	}
@@ -75,7 +75,7 @@ func TestExecuteActionStatus(t *testing.T) {
 	var message discordgo.MessageCreate = discordgo.MessageCreate{
 		Message: &discordgo.Message{},
 	}
-	result, err := StatusAction.Execute(nil, &message, nil)
+	result, err := StatusAction.Execute(nil, nil, &message, nil)
 	if err != nil {
 		t.Errorf("Error executing status action")
 	}

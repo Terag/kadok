@@ -1,6 +1,9 @@
 FROM golang:1.19-alpine AS builder
 WORKDIR /go/app/src
-ADD . /go/app/src
+COPY go.mod /go/app/src/
+COPY go.sum /go/app/src/
+RUN go mod download
+COPY . /go/app/src
 RUN apk add --update git
 RUN BUILD_VERSION=$(git describe --tags) && \
     BUILD_DATE=$(date -u -Iseconds) && \

@@ -23,7 +23,7 @@ type TplParams struct {
 }
 
 // ExecuteAction is the function type to implement with an Action
-type ExecuteAction func(s *discordgo.Session, m *discordgo.MessageCreate) (string, error)
+type ExecuteAction func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate) (string, error)
 
 // ResolveAction is used to resolve the action that should be executed from a command.
 // It returns the action to execute and the function to execute it as well.
@@ -44,13 +44,13 @@ func MakeExecuteAction(action *Action, parameters []string) ExecuteAction {
 	// Check if there is only 1 parameter with the value "HELP"
 	if len(parameters) == 1 && strings.ToUpper(parameters[0]) == "AIDE" {
 		// If yes, returns an ExecuteAction that returns Action's information
-		return func(s *discordgo.Session, m *discordgo.MessageCreate) (string, error) {
+		return func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate) (string, error) {
 			return action.Information, nil
 		}
 	}
 	// If no, returns an execute action with the parameters initialized
-	return func(s *discordgo.Session, m *discordgo.MessageCreate) (string, error) {
-		return action.Execute(s, m, parameters)
+	return func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate) (string, error) {
+		return action.Execute(bc, s, m, parameters)
 	}
 }
 
@@ -63,7 +63,7 @@ type Action struct {
 	// The sub actions in the hierarchy. They do not inherit the permission requirement
 	SubActions map[string]*Action
 	// Executed on call to format data passed to template
-	GetData func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{}
+	GetData func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{}
 	// Path to the action template
 	Template string
 }
@@ -92,14 +92,14 @@ func (a *Action) GetTemplate(parameters []string) *template.Template {
 }
 
 // Execute is the function to execute when the action is called
-func (a *Action) Execute(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
+func (a *Action) Execute(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) (string, error) {
 	var tpl bytes.Buffer
 	var err = a.GetTemplate(parameters).Execute(&tpl, &TplParams{
 		*m.Message,
 		info.GetInfo(),
 		Configuration,
 		parameters,
-		a.GetData(s, m, parameters),
+		a.GetData(bc, s, m, parameters),
 	})
 	return tpl.String(), err
 }
@@ -110,7 +110,7 @@ func (a *Action) GetPermission() security.Permission {
 }
 
 // EmptyData is an helper to instanciate an action that doesn't rely on data
-func EmptyData(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+func EmptyData(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
 	return make(map[string]interface{})
 }
 
@@ -129,7 +129,7 @@ var (
 		security.GetCharacterList,
 		"C'est Kadok qui a pleins d'amis",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
 			return map[string]interface{}{
 				"Characters": Configuration.Characters.List,
 			}
@@ -156,7 +156,7 @@ var (
 		security.EmptyPermission,
 		"La liste des groupes disponibles !",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
 			groups := Configuration.Security.RolesHierarchy.GetGroups()
 			return map[string]interface{}{
 				"Groups": groups,
@@ -169,7 +169,7 @@ var (
 		security.EmptyPermission,
 		"C'est ici qu'on rejoint un groupe !\n> Commande : `kadok groupe rejoindre <groupId|groupName>`",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
 			roleReference := strings.Join(parameters, " ")
 			addRole := MakeAddRole(s, m)
 			group, err := Configuration.Security.RolesHierarchy.JoinGroup(addRole, roleReference)
@@ -186,7 +186,7 @@ var (
 		security.EmptyPermission,
 		"C'est ici qu'on part d'un groupe ! Snif..\n> Commande : `kadok groupe quitter <groupId|groupName>`",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
 			roleReference := strings.Join(parameters, " ")
 			removeRole := MakeRemoveRole(s, m)
 			group, err := Configuration.Security.RolesHierarchy.LeaveGroup(removeRole, roleReference)
@@ -218,7 +218,7 @@ var (
 		security.EmptyPermission,
 		"La liste des clans disponibles !",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
 			clans := Configuration.Security.RolesHierarchy.GetClans()
 			return map[string]interface{}{
 				"Clans": clans,
@@ -231,7 +231,7 @@ var (
 		security.EmptyPermission,
 		"C'est ici qu'on rejoint un clan !\n> Commande : `kadok clan rejoindre <clanId|clanName>`",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
 			roleReference := strings.Join(parameters, " ")
 			addRole := MakeAddRole(s, m)
 			removeRole := MakeRemoveRole(s, m)
@@ -249,7 +249,7 @@ var (
 		security.EmptyPermission,
 		"C'est ici qu'on part d'un clan ! Snif..\n> Commande : `kadok clan quitter <clanId|clanName>`",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
 			roleReference := strings.Join(parameters, " ")
 			removeRole := MakeRemoveRole(s, m)
 			clan, err := Configuration.Security.RolesHierarchy.LeaveClan(removeRole, roleReference)
@@ -279,8 +279,8 @@ var (
 		security.EmptyPermission,
 		"La liste des radios disponibles !",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
-			stations, err := Configuration.Radio.GetStations()
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			stations, err := Configuration.Radio.France.GetStations(bc.HttpClient)
 			if err != nil {
 				return map[string]interface{}{
 					"Error": err,
@@ -303,9 +303,9 @@ var (
 		security.EmptyPermission,
 		"Info d'une radio en particulier !",
 		map[string]*Action{},
-		func(s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
 			stationId := strings.Join(parameters, " ")
-			station, err := Configuration.Radio.GetStation(stationId)
+			station, err := Configuration.Radio.France.GetStation(bc.HttpClient, stationId)
 			return map[string]interface{}{
 				"Username": m.Author.Username,
 				"Station":  station,

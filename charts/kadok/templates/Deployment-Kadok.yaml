@@ -32,13 +32,13 @@ spec:
           volumeMounts:
             {{- if .Values.kadok.properties }}
             - name: config-properties
-              mountPath: go/app/config/properties.yaml
+              mountPath: go/app/configs/properties.yaml
               subPath: properties.yaml
               readOnly: true
             {{- end }}
             {{- if .Values.kadok.roles }}
             - name: config-roles
-              mountPath: go/app/config/roles.yaml
+              mountPath: go/app/configs/roles.yaml
               subPath: roles.yaml
               readOnly: true
             {{- end }}

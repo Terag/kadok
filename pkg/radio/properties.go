@@ -8,22 +8,6 @@ type Properties struct {
 	France *RadioFrance
 }
 
-func (p *Properties) GetStations() ([]Station, error) {
-	if p.France != nil {
-		return p.France.GetStations()
-	} else {
-		return []Station{}, nil
-	}
-}
-
-func (p *Properties) GetStation(id string) (Station, error) {
-	if p.France != nil {
-		return p.France.GetStation(id)
-	} else {
-		return Station{}, nil
-	}
-}
-
 // UnmarshalYAML implementation for the package Properties
 func (properties *Properties) UnmarshalYAML(unmarshal func(interface{}) error) error {
 

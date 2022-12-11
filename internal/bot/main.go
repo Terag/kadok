@@ -43,14 +43,13 @@ type Guild struct {
 
 var (
 	Configuration Properties
+	Context       BotContext
 )
 
 // Run starts the bot. and call for registering the handlers.
 // In case of error when launching the server, `onError` is called
 // Once the server is launched, call onReady and wait on its return to close the server.
 func Run(onReady func(), onError func(error), token string, configPath string) {
-
-	client := http.NewHttpClient(cache.NewMemoryCache(time.Duration(60*time.Second)), time.Duration(30*time.Second))
 
 	configFile, err := ioutil.ReadFile(configPath)
 	if err != nil {
@@ -63,7 +62,7 @@ func Run(onReady func(), onError func(error), token string, configPath string) {
 		onError(errors.New("Kadok bot error: " + err.Error()))
 		return
 	}
-	Configuration.Radio.France.Client = &client
+
 	numberRoles := len(Configuration.Security.RolesHierarchy.Buffer)
 	numberClans := len(Configuration.Security.RolesHierarchy.GetClans())
 	numberGroups := len(Configuration.Security.RolesHierarchy.GetGroups())
@@ -76,8 +75,11 @@ func Run(onReady func(), onError func(error), token string, configPath string) {
 		return
 	}
 
+	memCache := cache.NewMemoryCache(time.Duration(60 * time.Second))
+	bc := NewBotContext(memCache, http.NewHttpClient(memCache, time.Duration(30*time.Second)))
+
 	// Register the messageCreate func as a callback for MessageCreate events.
-	err = registerHandlers(dg)
+	err = registerHandlers(dg, &bc)
 	if err != nil {
 		fmt.Println("error registering handler: ", err)
 	}
@@ -116,7 +118,7 @@ func Run(onReady func(), onError func(error), token string, configPath string) {
 			onError(errors.New("Kadok bot error: " + err.Error()))
 			return
 		}
-		fmt.Println("Configured guild not found. The bot must be invited in the right guild using the following link: https://discord.com/api/oauth2/authorize?client_id=" + application.ID + "&scope=bot&permissions=8")
+		fmt.Println("Configured guild \"", Configuration.Guild.Name, "\" not found. The bot must be invited in the right guild using the following link: https://discord.com/api/oauth2/authorize?client_id="+application.ID+"&scope=bot&permissions=8")
 		onError(errors.New("Kadok bot error: Configured guild not found. The bot must be invited in the right guild using the following link: https://discord.com/api/oauth2/authorize?client_id=" + application.ID + "&scope=bot&permissions=8"))
 		return
 	}

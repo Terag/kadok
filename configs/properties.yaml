@@ -2,7 +2,7 @@ prefix: "kadok"
 guild:
   name: "Les petits pedestres"
 security:
-  roles: "config/roles.yaml"
+  roles: "configs/roles.yaml"
 characters:
   folder: "assets/characters"
 templates: "assets/templates"
