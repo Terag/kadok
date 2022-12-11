@@ -62,16 +62,20 @@ Roles and basic properties are customizable. The roles structure should be set i
 ### Global
 
 The global configuration of the bot is stored in a single yaml file.
-The default path for this file being: _properties.yaml_
+The default path for this file being: _configs/properties.yaml_
 
 This file old basic values to initialize modules. The values are separated between the packages. Each package hold the responsibility of defining the properties format.
 
 Example:
 ```yaml
+prefix: "kadok"
+guild:
+  name: "Les petits pedestres"
 security:
-  roles: "security/roles.json"
+  roles: "configs/roles.yaml"
 characters:
-  folder: "characters/resources"
+  folder: "assets/characters"
+templates: "assets/templates"
 ```
 
 ### Packages

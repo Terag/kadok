@@ -352,3 +352,6 @@ junit.xml
 
 #binary
 /kadok
+
+#File containing discord kadok token for local development
+kadok-dev-token.txt

@@ -107,15 +107,14 @@ func (fhc FakeHttpClient) Execute(request http.Request) (http.Response, error) {
 
 func TestRadioFranceGetStations(t *testing.T) {
 	radio := RadioFrance{
-		Client: FakeHttpClient{
-			QueryResponse: []byte(QueryBrandsResponse),
-		},
 		Url: func() url.URL {
 			radioUrl, _ := url.ParseRequestURI("https://openapi.radiofrance.fr/v1/graphql")
 			return *radioUrl
 		}(),
 	}
-	stations, err := radio.GetStations()
+	stations, err := radio.GetStations(FakeHttpClient{
+		QueryResponse: []byte(QueryBrandsResponse),
+	})
 	if err != nil {
 		t.Errorf("Failed get stations: %v", err.Error())
 		return

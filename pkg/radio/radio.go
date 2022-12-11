@@ -16,12 +16,6 @@ const (
 	WebStation
 )
 
-type Radio interface {
-	GetName() string
-	GetStations() ([]Station, error)
-	GetStation(id string) (Station, error)
-}
-
 type Station struct {
 	Id          string
 	Name        string

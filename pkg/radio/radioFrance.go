@@ -5,13 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/terag/kadok/internal/graphql"
 	"github.com/terag/kadok/internal/http"
 )
 
 type RadioFrance struct {
-	Client http.Client
 	Url    url.URL
 	ApiKey string
 }
@@ -20,16 +20,16 @@ func (rf RadioFrance) GetName() string {
 	return "Radio France"
 }
 
-func (rf *RadioFrance) GetStations() ([]Station, error) {
-	dto, err := rf.GetRadioFranceBrands()
+func (rf *RadioFrance) GetStations(httpClient http.Client) ([]Station, error) {
+	dto, err := rf.GetRadioFranceBrands(httpClient)
 	if err != nil {
 		return []Station{}, err
 	}
 	return dto.GetStations(), nil
 }
 
-func (rf *RadioFrance) GetStation(id string) (Station, error) {
-	stations, err := rf.GetStations()
+func (rf *RadioFrance) GetStation(httpClient http.Client, id string) (Station, error) {
+	stations, err := rf.GetStations(httpClient)
 	if err != nil {
 		return Station{}, err
 	}
@@ -41,7 +41,7 @@ func (rf *RadioFrance) GetStation(id string) (Station, error) {
 	return Station{}, errors.New("Station not found")
 }
 
-func (rf *RadioFrance) GetRadioFranceBrands() (RadioFranceDto, error) {
+func (rf *RadioFrance) GetRadioFranceBrands(httpClient http.Client) (RadioFranceDto, error) {
 	var rfd RadioFranceDto
 
 	body, _ := json.Marshal(&graphql.Query{
@@ -68,10 +68,11 @@ func (rf *RadioFrance) GetRadioFranceBrands() (RadioFranceDto, error) {
         }`,
 	})
 
-	response, err := rf.Client.Execute(http.Request{
-		Method:   "POST",
-		Url:      rf.Url,
-		CacheKey: "radio_france_brands",
+	response, err := httpClient.Execute(http.Request{
+		Method:        "POST",
+		Url:           rf.Url,
+		CacheKey:      "radio_france_brands",
+		CacheDuration: time.Duration(5 * time.Minute),
 		Headers: []http.Header{
 			{
 				Key: "Content-Type",
