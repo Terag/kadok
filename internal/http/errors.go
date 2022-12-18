@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 )
@@ -14,5 +15,5 @@ type HttpError struct {
 }
 
 func (he HttpError) Error() string {
-	return "Http error, url: " + he.Url.String() + ", status: " + string(he.StatusCode) + ", message: " + he.Message
+	return "Http error, url: " + he.Url.String() + ", status: " + fmt.Sprint(he.StatusCode) + ", message: " + he.Message
 }

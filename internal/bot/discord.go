@@ -72,6 +72,20 @@ func GetRoleID(s *discordgo.Session, guildID string, roleName string) (string, e
 	return "", errors.New("role not found")
 }
 
+func GetUserCurrentVoiceChannel(s *discordgo.Session, guildID string, userID string) (string, error) {
+	g, err := s.State.Guild(guildID)
+	if err != nil {
+		return "", errors.New("Could not find guild")
+	}
+	// Look for the message sender in that guild's current voice states.
+	for _, vs := range g.VoiceStates {
+		if vs.UserID == userID {
+			return vs.ChannelID, nil
+		}
+	}
+	return "", errors.New("User not connected to voice channel")
+}
+
 func MakeAddRole(s *discordgo.Session, m *discordgo.MessageCreate) security.AddRole {
 	return func(role security.Role) error {
 		roleID, err := GetRoleID(s, m.GuildID, role.Name)

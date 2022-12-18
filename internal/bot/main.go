@@ -76,7 +76,7 @@ func Run(onReady func(), onError func(error), token string, configPath string) {
 	}
 
 	memCache := cache.NewMemoryCache(time.Duration(60 * time.Second))
-	bc := NewBotContext(memCache, http.NewHttpClient(memCache, time.Duration(30*time.Second)))
+	bc := NewBotContext(dg, memCache, http.NewHttpClient(memCache, time.Duration(30*time.Second)))
 
 	// Register the messageCreate func as a callback for MessageCreate events.
 	err = registerHandlers(dg, &bc)

@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/terag/kadok/internal/http"
 	"github.com/terag/kadok/internal/info"
 	"github.com/terag/kadok/internal/utils"
 	"github.com/terag/kadok/pkg/security"
@@ -262,14 +263,41 @@ var (
 		"clanLeave.tmpl",
 	}
 
+	AudioRootAction = Action{
+		security.EmptyPermission,
+		"Tu peux gerer tous les trucs audio que je fais !\n" +
+			"> `kadok audio stop`\n",
+		map[string]*Action{
+			"STOP": &AudioStopAction,
+		},
+		EmptyData,
+		"404.tmpl",
+	}
+
+	AudioStopAction = Action{
+		security.EmptyPermission,
+		"Je m'arrete de parler 'snif snif' !\n",
+		map[string]*Action{},
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			err := bc.Voice.Stop()
+			return map[string]interface{}{
+				"Username": m.Author.Username,
+				"Error":    err,
+			}
+		},
+		"audioStop.tmpl",
+	}
+
 	RadioRootAction = Action{
 		security.EmptyPermission,
 		"Toutes les radios que tu peux écouter !\n" +
 			"> `kadok radio liste <pageIndex>`\n" +
+			"> `kadok radio ecoute <pageId>`\n" +
 			"> `kadok radio info <radioId>`\n",
 		map[string]*Action{
-			"LISTE": &RadioListAction,
-			"INFO":  &RadioInfoAction,
+			"LISTE":  &RadioListAction,
+			"INFO":   &RadioInfoAction,
+			"ECOUTE": &RadioListenAction,
 		},
 		EmptyData,
 		"404.tmpl",
@@ -315,6 +343,45 @@ var (
 		"radioInfo.tmpl",
 	}
 
+	RadioListenAction = Action{
+		security.EmptyPermission,
+		"Ecoute la radio !",
+		map[string]*Action{},
+		func(bc *BotContext, s *discordgo.Session, m *discordgo.MessageCreate, parameters []string) map[string]interface{} {
+			returnError := func(err error) map[string]interface{} {
+				return map[string]interface{}{
+					"Username": m.Author.Username,
+					"Error":    err,
+				}
+			}
+			stationId := strings.Join(parameters, " ")
+			station, err := Configuration.Radio.France.GetStation(bc.HttpClient, stationId)
+			voiceChannelID, err := GetUserCurrentVoiceChannel(s, m.GuildID, m.Author.ID)
+			if err != nil {
+				return returnError(err)
+			}
+
+			response, err := bc.HttpClient.OpenStream(http.Request{
+				Method: "GET",
+				Url:    *station.StreamUrl,
+			})
+			if err != nil {
+				return returnError(err)
+			}
+
+			err = bc.Voice.Play(response.Stream, m.GuildID, voiceChannelID)
+			if err != nil {
+				return returnError(err)
+			}
+
+			return map[string]interface{}{
+				"Username": m.Author.Username,
+				"Station":  station,
+			}
+		},
+		"radioListen.tmpl",
+	}
+
 	// RootAction is the first action call by Kadok for resolve
 	RootAction = Action{
 		security.GetHelp,
@@ -324,13 +391,15 @@ var (
 			"> - `kadok tatan` je te parle de moi !\n" +
 			"> - `kadok groupe <liste|rejoindre|quitter>` Pour voir et rejoindre un groupe ! Tu peux etre dans autant de groupes que tu veux !\n" +
 			"> - `kadok clan <liste|rejoindre|quitter>` Pour voir et rejoindre un clan ! Tu peux avoir seulement un clan !\n" +
-			"> - `kadok radio <liste|info>` Pour voir toutes les radios à écouter !",
+			"> - `kadok radio <liste|info|ecoute>` Pour voir toutes les radios à écouter !\n" +
+			"> - `kadok audio <stop>` Pour que j'arrete de parler !\n",
 		map[string]*Action{
 			"AQUI":   &GetCharactersAction,
 			"TATAN":  &StatusAction,
 			"GROUPE": &GroupRootAction,
 			"CLAN":   &ClanRootAction,
 			"RADIO":  &RadioRootAction,
+			"AUDIO":  &AudioRootAction,
 		},
 		EmptyData,
 		"404.tmpl",
