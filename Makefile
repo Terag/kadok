@@ -14,7 +14,7 @@ KADOK_TOKEN := $(shell cat kadok-dev-token.txt)
 .PHONY: clean test
 
 build:
-	go build -o kadok -ldflags '-X "github.com/Terag/kadok/info.Version=$(BUILD_VERSION)" -X "github.com/Terag/kadok/info.BuildDate=$(BUILD_DATE)" -X "github.com/Terag/kadok/info.GitCommit=$(GIT_COMMIT)" -X "github.com/Terag/kadok/info.Contributors=$(GIT_CONTRIBUTORS)"'
+	go build -o kadok -ldflags '-X "github.com/terag/kadok/internal/info.Version=$(BUILD_VERSION)" -X "github.com/terag/kadok/internal/info.BuildDate=$(BUILD_DATE)" -X "github.com/terag/kadok/internal/info.GitCommit=$(GIT_COMMIT)" -X "github.com/terag/kadok/internal/info.Contributors=$(GIT_CONTRIBUTORS)"'
 
 build-container:
 	docker build -t kadok:local .

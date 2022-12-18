@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -32,20 +33,32 @@ type Response struct {
 	Body       []byte
 }
 
+type ResponseStream struct {
+	StatusCode int
+	Headers    []Header
+	CacheHit   bool
+	Stream     io.ReadCloser
+}
+
 type Client interface {
-	Execute(Request Request) (Response, error)
+	Execute(request Request) (Response, error)
+	OpenStream(request Request) (ResponseStream, error)
 }
 
 type HttpClient struct {
-	Client http.Client
-	Cache  cache.Cache
+	client       http.Client
+	streamClient http.Client
+	Cache        cache.Cache
 }
 
 func NewHttpClient(cache cache.Cache, timeout time.Duration) *HttpClient {
 	return &HttpClient{
 		Cache: cache,
-		Client: http.Client{
+		client: http.Client{
 			Timeout: timeout,
+		},
+		streamClient: http.Client{
+			Timeout: 0,
 		},
 	}
 }
@@ -73,10 +86,11 @@ func (hc *HttpClient) Execute(request Request) (Response, error) {
 	}
 
 	fmt.Println("HTTP Execute - Request: ", request.Method, " ", request.Url)
-	httpResponse, err := hc.Client.Do(httpRequest)
+	httpResponse, err := hc.client.Do(httpRequest)
 	if err != nil {
 		return Response{}, err
 	}
+	defer httpResponse.Body.Close()
 
 	responseBody, err := ioutil.ReadAll(httpResponse.Body)
 
@@ -108,5 +122,60 @@ func (hc *HttpClient) Execute(request Request) (Response, error) {
 		Headers:    headers,
 		CacheHit:   false,
 		Body:       responseBody,
+	}, nil
+}
+
+func (hc *HttpClient) OpenStream(request Request) (ResponseStream, error) {
+	httpRequest, err := http.NewRequest(request.Method, request.Url.String(), bytes.NewBuffer(request.Body))
+	if err != nil {
+		return ResponseStream{}, err
+	}
+	for _, header := range request.Headers {
+		for _, hv := range header.Values {
+			httpRequest.Header.Add(header.Key, hv)
+		}
+	}
+
+	fmt.Println("HTTP OpenStream - Request: ", request.Method, " ", request.Url)
+	httpResponse, err := hc.streamClient.Do(httpRequest)
+	if err != nil {
+		return ResponseStream{}, err
+	}
+
+	if httpResponse.StatusCode > 299 {
+		responseBody, _ := ioutil.ReadAll(httpResponse.Body)
+		fmt.Println("HTTP OpenStream - Response Error: ", httpResponse.Status, " - ", string(responseBody))
+		return ResponseStream{}, HttpError{
+			StatusCode: httpResponse.StatusCode,
+			Url:        request.Url,
+			Message:    string(responseBody),
+		}
+	}
+
+	var headers []Header
+	for k, v := range httpResponse.Header {
+		headers = append(headers, Header{
+			Key:    k,
+			Values: v,
+		})
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		fmt.Println("HTTP OpenStream - Response Not Ok: ", httpResponse.Status)
+		return ResponseStream{
+			StatusCode: httpResponse.StatusCode,
+			Headers:    headers,
+			CacheHit:   false,
+			Stream:     httpResponse.Body,
+		}, nil
+	}
+
+	fmt.Println("HTTP OpenStream - Response: ", httpResponse.Status)
+
+	return ResponseStream{
+		StatusCode: httpResponse.StatusCode,
+		Headers:    headers,
+		CacheHit:   false,
+		Stream:     httpResponse.Body,
 	}, nil
 }

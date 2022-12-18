@@ -20,7 +20,7 @@ var versionCmd = &cobra.Command{
 		fmt.Println("Url: " + info.URL)
 		fmt.Println("BuildCommit: " + info.GitCommit)
 		fmt.Println("BuildDate: " + info.BuildDate)
-		fmt.Println("Go: " + info.GetInfo().Version)
+		fmt.Println("Go: " + info.GetInfo().GoVersion)
 		fmt.Println("License: " + info.LicenseName)
 		fmt.Println("LicenseUrl: " + info.LicenseURL)
 		fmt.Println("Contributors: " + info.Contributors)

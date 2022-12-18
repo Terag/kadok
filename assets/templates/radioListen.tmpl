@@ -1,0 +1,9 @@
+{{- if .Data.Error -}}
+> {{.Data.Username}}: oups ! {{.Data.Error.Error}}
+{{- else -}}
+> On écoute :
+> {{ .Data.Station.Id }}: {{ .Data.Station.Name }}
+> {{ .Data.Station.Summary }}
+> Stream: {{ .Data.Station.StreamUrl.String }}
+> Description: {{ .Data.Station.Description }}
+{{- end -}}

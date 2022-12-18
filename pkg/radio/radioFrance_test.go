@@ -105,6 +105,14 @@ func (fhc FakeHttpClient) Execute(request http.Request) (http.Response, error) {
 	}, nil
 }
 
+func (fhc FakeHttpClient) OpenStream(request http.Request) (http.ResponseStream, error) {
+	return http.ResponseStream{
+		StatusCode: 200,
+		CacheHit:   false,
+		Stream:     nil,
+	}, nil
+}
+
 func TestRadioFranceGetStations(t *testing.T) {
 	radio := RadioFrance{
 		Url: func() url.URL {
